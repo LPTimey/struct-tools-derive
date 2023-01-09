@@ -24,17 +24,9 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         .filter_map(|field| match field.ident {
             Some(id) => Some(id),
             None => None,
-        })
-        .collect::<Vec<syn::Ident>>();
+        });
 
-    let mut field_types = fields.clone().into_iter().filter_map(|fields|{
-        match fields.ty{
-            syn::Type::Path(type_path) => Some(type_path.path.segments[0].clone().ident.to_string()),
-            _ => None,
-        }
-    }).collect::<Vec<String>>();
-    field_types.sort();
-    field_types.dedup();
+    let field_types = fields.iter().map(|field| &field.ty);
 
     let fields_vec: std::vec::Vec<std::string::String> = fields
         .iter()
@@ -53,7 +45,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         impl #ident{
             pub fn values<E>(&self) -> ::std::vec::Vec<E>
             where
-            E: Display + From<u64> + From<String>// + #(From<#field_types>)+*
+            E: #(From<#field_types>)+*
             {
                 vec![#(E::from(self.#field_ids.clone())),*]
             }
