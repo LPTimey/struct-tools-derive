@@ -8,7 +8,6 @@ use syn::{
 #[proc_macro_derive(StructIterTools)]
 pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
-    println!("{:?}", ast);
     let DeriveInput { ident, data, .. } = ast.clone();
 
     let fields = match data {
@@ -18,8 +17,6 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         }) => named,
         _ => todo!(),
     };
-
-    println!("{:?}", fields);
 
     let field_ids = fields
         .clone()
@@ -38,8 +35,6 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     }).collect::<Vec<String>>();
     field_types.sort();
     field_types.dedup();
-
-    println!("{:?}",field_types);
 
     let fields_vec: std::vec::Vec<std::string::String> = fields
         .iter()
