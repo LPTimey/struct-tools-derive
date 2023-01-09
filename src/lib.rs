@@ -19,9 +19,8 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     };
 
     let field_ids = fields
-        .clone()
-        .into_iter()
-        .filter_map(|field| match field.ident {
+        .iter()
+        .filter_map(|field| match &field.ident {
             Some(id) => Some(id),
             None => None,
         });
