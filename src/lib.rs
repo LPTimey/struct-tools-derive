@@ -6,8 +6,7 @@ use syn::{
 
 #[proc_macro_derive(StructIterTools)]
 pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(input as DeriveInput);
-    let DeriveInput { ident, data, .. } = ast.clone();
+    let DeriveInput { ident, data, .. } = parse_macro_input!(input as DeriveInput);
 
     let fields = match data {
         Struct(DataStruct {
