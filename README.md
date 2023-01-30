@@ -33,3 +33,12 @@ pub struct Foo{
     {...}
 }
 ```
+
+This now let's you use it like this:
+
+```rust
+use struct_tools_derive::StructIterTools;
+
+let fields = Foo::fields();
+asserteq!(fields;vec![String::from("field1"), String::from("field2"),...])
+```
