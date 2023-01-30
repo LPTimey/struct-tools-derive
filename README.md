@@ -42,3 +42,55 @@ use struct_tools_derive::StructIterTools;
 let fields = Foo::fields();
 assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
 ```
+
+```rust
+use struct_tools_derive::StructIterTools;
+
+enum FooEnum {
+  I32(i32),
+  String(String),
+  {...}
+}
+impl From<i32> for FooEnum {
+    fn from(value: 32) -> Self {
+        FooEnum::I32(value)
+    }
+}
+impl From<String> for FooEnum {
+    fn from(value: String) -> Self {
+        FooEnum::String(value)
+    }
+}
+
+let instance = Foo::default();
+
+let values = instance.values::<FooEnum>();
+
+assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new()),...])
+```
+
+```rust
+use struct_tools_derive::StructIterTools;
+
+enum FooEnum {
+  I32(i32),
+  String(String),
+  {...}
+}
+impl From<i32> for FooEnum {
+    fn from(value: 32) -> Self {
+        FooEnum::I32(value)
+    }
+}
+impl From<String> for FooEnum {
+    fn from(value: String) -> Self {
+        FooEnum::String(value)
+    }
+}
+
+let instance = Foo::default();
+
+let f_v = instance.fields_and_values::<FooEnum>();
+
+assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new())),...])
+```
