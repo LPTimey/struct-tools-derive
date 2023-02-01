@@ -59,7 +59,6 @@ fn values() {
 
 #[test]
 fn enum_test() {
-    let test = String::from("value1").to_uppercase();
     let test = BookEnum::String("()".to_string());
     println!("{test:?}");
 }

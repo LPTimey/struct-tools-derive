@@ -112,6 +112,5 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
             }
         })*
     };
-    println!("{}", result);
     result.into()
 }
