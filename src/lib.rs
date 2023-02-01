@@ -103,14 +103,15 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let result = quote! {
         [derive(Debug)]
         pub enum #ident {
-            (#(#enum_fields (#field_types)),*)
+            #(#enum_fields (#field_types)),*
         }
 
         #(impl From<#from_types> for #ident{
-            fn from(value: impl Into<#field_types>) -> Self {
-                #ident :: #from_fields (value)
+            fn from(value: #field_types) -> Self {
+                #ident :: #from_fields (value.into())
             }
         })*
     };
+    //println!("{}", result);
     result.into()
 }
