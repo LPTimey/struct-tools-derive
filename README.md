@@ -11,8 +11,6 @@ Table of Contents
       - [fields and values](#fields-and-values)
     - [StructEnum](#structenum)
 
----
-
 ## Contains
 
 Tools for working with structs.
@@ -24,8 +22,6 @@ currently contains:
   - `values`<`E`> (`&self`) -> Vec<`E`>: A Method that returns the values of its Instance
   - `fields_and_values`<`E`> (`&self`) -> Vec<`(String, E)`>: A Method that returns a Touple of the field and the values of its Instance
 - StructEnum
-
----
 
 ## How to use
 
@@ -121,6 +117,8 @@ let f_v = instance.fields_and_values::<FooEnum>();
 assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new())),...])
 ```
 
+---
+
 ### StructEnum
 
 If you have a struct
@@ -146,7 +144,7 @@ pub struct Foo{
 }
 ```
 
-This Grants you access to an automatically generated Enum with the name {structname}Enum.
+This Grants you access to an automatically generated Enum with the name `{structname}Enum`.
 
 its Variants are named by Capitalizing the first letter of the respective Type
 
