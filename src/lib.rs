@@ -101,7 +101,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let from_types = field_types.clone();
 
     let result = quote! {
-        #[derive(Debug)]
+        //#[derive(Debug)]
         pub enum #ident {
             #(#enum_fields (#field_types)),*
         }
