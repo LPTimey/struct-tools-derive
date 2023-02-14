@@ -3,6 +3,7 @@ use std::fmt::Display;
 use struct_tools_derive::{StructEnum, StructIterTools};
 
 #[derive(StructIterTools, StructEnum)]
+#[EnumDerives(Debug)]
 pub struct Book {
     id: u64,
     title: String,
@@ -53,21 +54,29 @@ fn values() {
         pages: 100,
         author: "me".to_string(),
     };
-    let expected = vec![BookEnumTest::U64(1), BookEnumTest::String("Title".to_string()), BookEnumTest::U64(100), BookEnumTest::String("me".to_string())];
+    let expected = vec![
+        BookEnumTest::U64(1),
+        BookEnumTest::String("Title".to_string()),
+        BookEnumTest::U64(100),
+        BookEnumTest::String("me".to_string()),
+    ];
 
     let book_values: Vec<BookEnumTest> = book.values::<BookEnumTest>();
     println!("fields: {book_values:?}");
-    let success = book_values.into_iter().enumerate().filter_map(|(i,value)|{
-        let expect = expected.get(i).unwrap();
-        match matches!(&value,expect){
-            true => None,
-            false => Some(value),
-        }
-    }).collect::<Vec<BookEnumTest>>().is_empty();
+    let success = book_values
+        .into_iter()
+        .enumerate()
+        .filter_map(|(i, value)| {
+            let expect = expected.get(i).unwrap();
+            match matches!(&value, expect) {
+                true => None,
+                false => Some(value),
+            }
+        })
+        .collect::<Vec<BookEnumTest>>()
+        .is_empty();
 
-    assert!(
-        success
-    )
+    assert!(success)
 }
 
 #[test]
@@ -83,18 +92,26 @@ fn enum_values_test() {
         pages: 100,
         author: "me".to_string(),
     };
-    let expected = vec![BookEnum::U64(1), BookEnum::String("Title".to_string()), BookEnum::U64(100), BookEnum::String("me".to_string())];
+    let expected = vec![
+        BookEnum::U64(1),
+        BookEnum::String("Title".to_string()),
+        BookEnum::U64(100),
+        BookEnum::String("me".to_string()),
+    ];
     let book_values: Vec<BookEnum> = book.values::<BookEnum>();
-    println!("fields: {book_values:?}");
-    let success = book_values.into_iter().enumerate().filter_map(|(i,value)|{
-        let expect = expected.get(i).unwrap();
-        match matches!(&value,expect){
-            true => None,
-            false => Some(value),
-        }
-    }).collect::<Vec<BookEnum>>().is_empty();
+    //println!("fields: {book_values:?}");
+    let success = book_values
+        .into_iter()
+        .enumerate()
+        .filter_map(|(i, value)| {
+            let expect = expected.get(i).unwrap();
+            match matches!(&value, expect) {
+                true => None,
+                false => Some(value),
+            }
+        })
+        .collect::<Vec<BookEnum>>()
+        .is_empty();
 
-    assert!(
-        success
-    )
+    assert!(success)
 }

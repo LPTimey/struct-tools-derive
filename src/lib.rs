@@ -60,10 +60,35 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[proc_macro_derive(StructEnum)]
+#[proc_macro_derive(StructEnum, attributes(EnumDerives))]
 pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
-    let DeriveInput { ident, data, .. } = parse_macro_input!(input as DeriveInput);
+    let ast = parse_macro_input!(input as DeriveInput);
+    let DeriveInput {
+        attrs, ident, data, ..
+    } = ast;
+
     let ident = Ident::new(&(ident.to_string() + "Enum"), ident.span());
+
+    let derives = attrs
+        .iter()
+        .filter(|attr| {
+            match attr.style {
+                syn::AttrStyle::Outer => (),
+                syn::AttrStyle::Inner(_) => {
+                    return false;
+                }
+            };
+            match attr.path.get_ident() {
+                Some(ident) => {
+                    if ident != &Ident::new("EnumDerives", ident.span()) {
+                        return false;
+                    }
+                    true
+                },
+                _ => false,
+            }
+        })
+        .map(|attr| attr.tokens.clone());
 
     let fields = match data {
         Struct(DataStruct {
@@ -101,7 +126,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let from_types = field_types.clone();
 
     let result = quote! {
-        //#[derive(Debug)]
+        #[derive #(#derives),*]
         pub enum #ident {
             #(#enum_fields (#field_types)),*
         }

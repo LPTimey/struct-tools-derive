@@ -168,3 +168,15 @@ impl From<String> for FooEnum {
 ```
 
 This means, that it can be used with both [values](#values) and [fields and values](#fields-and-values)
+
+you can also have it derive traits by adding them to the `EnumDerives` attribute like this:
+
+```rust
+#[derive(StructEnum)]
+#[EnumDerives(Debug)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    {...}
+}
+```
