@@ -125,9 +125,13 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
             /**
 ```rust
 use struct_tools_derive::StructIterTools;
-
+!#[derive(StructIterTools, Default)]
+!pub struct Foo{
+!    field1: i32,
+!    field2: String,
+!}
 let fields = Foo::fields();
-assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
+assert_eq!(fields,vec![String::from("field1"), String::from("field2")])
 ```
             */
             pub fn fields() -> ::std::vec::Vec<::std::string::String>{
@@ -140,10 +144,15 @@ assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
 ```rust
 use struct_tools_derive::StructIterTools;
 
+!#[derive(StructIterTools, Default)]
+!pub struct Foo{
+!    field1: i32,
+!    field2: String,
+!}
+
 enum FooEnum {
   I32(i32),
   String(String),
-  {...}
 }
 impl From<i32> for FooEnum {
     fn from(value: 32) -> Self {
@@ -160,7 +169,7 @@ let instance = Foo::default();
 
 let values = instance.values::<FooEnum>();
 
-assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new()),...])
+assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new())])
 ```
 
             */
@@ -176,10 +185,15 @@ assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new()),...])
 ```rust
 use struct_tools_derive::StructIterTools;
 
+!#[derive(StructIterTools, Default)]
+!pub struct Foo{
+!    field1: i32,
+!    field2: String,
+!}
+
 enum FooEnum {
   I32(i32),
-  String(String),
-  {...}
+  String(String)
 }
 impl From<i32> for FooEnum {
     fn from(value: 32) -> Self {
@@ -196,7 +210,7 @@ let instance = Foo::default();
 
 let f_v = instance.fields_and_values::<FooEnum>();
 
-assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new())),...])
+assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new()))])
 ```
             */
             pub fn fields_and_values<E>(&self) -> ::std::vec::Vec<(::std::string::String, E)>
