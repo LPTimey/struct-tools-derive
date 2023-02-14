@@ -125,11 +125,11 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
             /**
 ```rust
 use struct_tools_derive::StructIterTools;
-!#[derive(StructIterTools, Default)]
-!pub struct Foo{
-!    field1: i32,
-!    field2: String,
-!}
+#[derive(StructIterTools, Default)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+}
 let fields = Foo::fields();
 assert_eq!(fields,vec![String::from("field1"), String::from("field2")])
 ```
@@ -144,15 +144,15 @@ assert_eq!(fields,vec![String::from("field1"), String::from("field2")])
 ```rust
 use struct_tools_derive::StructIterTools;
 
-!#[derive(StructIterTools, Default)]
-!pub struct Foo{
-!    field1: i32,
-!    field2: String,
-!}
+#[derive(StructIterTools, Default)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+}
 
 enum FooEnum {
-  I32(i32),
-  String(String),
+    I32(i32),
+    String(String),
 }
 impl From<i32> for FooEnum {
     fn from(value: 32) -> Self {
