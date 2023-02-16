@@ -72,7 +72,7 @@ enum FooEnum {
   {...}
 }
 impl From<i32> for FooEnum {
-    fn from(value: 32) -> Self {
+    fn from(value: i32) -> Self {
         FooEnum::I32(value)
     }
 }
@@ -100,7 +100,7 @@ enum FooEnum {
   {...}
 }
 impl From<i32> for FooEnum {
-    fn from(value: 32) -> Self {
+    fn from(value: i32) -> Self {
         FooEnum::I32(value)
     }
 }
@@ -137,6 +137,7 @@ you can just add the derive to it
 use struct_tools_derive::StructEnum;
 
 #[derive(StructEnum)]
+#[EnumDerives()]
 pub struct Foo{
     field1: i32,
     field2: String,
@@ -154,9 +155,9 @@ pub enum FooEnum{
     String(String),
     {...}
 }
-impl From<u64> for FooEnum {
-    fn from(value: u64) -> Self {
-        FooEnum::U64(value)
+impl From<i32> for FooEnum {
+    fn from(value: i32) -> Self {
+        FooEnum::I32(value)
     }
 }
 impl From<String> for FooEnum {

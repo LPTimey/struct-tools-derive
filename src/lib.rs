@@ -13,7 +13,6 @@ use syn::{
 pub struct Foo{
     field1: i32,
     field2: String,
-    {...}
 }
 ```
 
@@ -26,7 +25,6 @@ use struct_tools_derive::StructIterTools;
 pub struct Foo{
     field1: i32,
     field2: String,
-    {...}
 }
 ```
 
@@ -37,8 +35,13 @@ This now let's you use it like this:
 ```rust
 use struct_tools_derive::StructIterTools;
 
+# #[derive(StructIterTools, Default)]
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+# }
 let fields = Foo::fields();
-assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
+assert_eq!(fields,vec![String::from("field1"), String::from("field2")])
 ```
 
 #### values
@@ -46,13 +49,18 @@ assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
 ```rust
 use struct_tools_derive::StructIterTools;
 
+# #[derive(StructIterTools, Default)]
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+# }
+#[derive(Debug, Eq, PartialEq)]
 enum FooEnum {
   I32(i32),
   String(String),
-  {...}
 }
 impl From<i32> for FooEnum {
-    fn from(value: 32) -> Self {
+    fn from(value: i32) -> Self {
         FooEnum::I32(value)
     }
 }
@@ -66,7 +74,7 @@ let instance = Foo::default();
 
 let values = instance.values::<FooEnum>();
 
-assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new()),...])
+assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new())])
 ```
 
 #### fields and values
@@ -74,13 +82,18 @@ assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new()),...])
 ```rust
 use struct_tools_derive::StructIterTools;
 
+# #[derive(StructIterTools, Default)]
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+# }
+#[derive(Debug, Eq, PartialEq)]
 enum FooEnum {
   I32(i32),
   String(String),
-  {...}
 }
 impl From<i32> for FooEnum {
-    fn from(value: 32) -> Self {
+    fn from(value: i32) -> Self {
         FooEnum::I32(value)
     }
 }
@@ -94,7 +107,7 @@ let instance = Foo::default();
 
 let f_v = instance.fields_and_values::<FooEnum>();
 
-assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new())),...])
+assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new()))])
 ```"#]
 pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     let DeriveInput { ident, data, .. } = parse_macro_input!(input as DeriveInput);
@@ -125,11 +138,11 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
             /**
 ```rust
 use struct_tools_derive::StructIterTools;
-#[derive(StructIterTools, Default)]
-pub struct Foo{
-    field1: i32,
-    field2: String,
-}
+# #[derive(StructIterTools, Default)]
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+# }
 let fields = Foo::fields();
 assert_eq!(fields,vec![String::from("field1"), String::from("field2")])
 ```
@@ -185,11 +198,11 @@ assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new())])
 ```rust
 use struct_tools_derive::StructIterTools;
 
-!#[derive(StructIterTools, Default)]
-!pub struct Foo{
-!    field1: i32,
-!    field2: String,
-!}
+# #[derive(StructIterTools, Default)]
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+# }
 
 enum FooEnum {
   I32(i32),
@@ -236,11 +249,11 @@ Will create an Enum which is capable of containing all possible contents of the 
 ```rust
 use struct_tools_derive::StructEnum;
 
-#[derive(StructEnum)]
+#[derive(Debug, StructEnum)]
+#[EnumDerives()]
 pub struct Foo{
     field1: i32,
     field2: String,
-    {...}
 }
 ```
 
@@ -252,11 +265,10 @@ its Variants are named by Capitalizing the first letter of the respective Type
 pub enum FooEnum{
     I32(i32),
     String(String),
-    {...}
 }
-impl From<u64> for FooEnum {
-    fn from(value: u64) -> Self {
-        FooEnum::U64(value)
+impl From<i32> for FooEnum {
+    fn from(value: i32) -> Self {
+        FooEnum::I32(value)
     }
 }
 impl From<String> for FooEnum {
@@ -264,7 +276,7 @@ impl From<String> for FooEnum {
         FooEnum::String(value)
     }
 }
-{...}
+
 ```
 
 This means, that it can be used with both values and fields and values from StructIterTools
@@ -272,12 +284,12 @@ This means, that it can be used with both values and fields and values from Stru
 you can also have it derive traits by adding them to the `EnumDerives` attribute like this:
 
 ```rust
+# use struct_tools_derive::{StructEnum, StructIterTools};
 #[derive(StructEnum)]
 #[EnumDerives(Debug)]
 pub struct Foo{
     field1: i32,
     field2: String,
-    {...}
 }
 ```"]
 pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
