@@ -57,6 +57,13 @@ This now let's you use it like this:
 ```rust
 use struct_tools_derive::StructIterTools;
 
+#[derive(StructIterTools)]
+#[StructFields]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+}
+
 let fields = Foo::fields();
 assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
 ```
@@ -65,6 +72,14 @@ assert_eq!(fields,vec![String::from("field1"), String::from("field2"),...])
 
 ```rust
 use struct_tools_derive::StructIterTools;
+
+// Default just for demonstration
+#[derive(StructIterTools, Default)]
+#[StructValues]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+}
 
 enum FooEnum {
   I32(i32),
@@ -81,6 +96,7 @@ impl From<String> for FooEnum {
         FooEnum::String(value)
     }
 }
+{...}
 
 let instance = Foo::default();
 
@@ -94,6 +110,16 @@ assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new()),...])
 ```rust
 use struct_tools_derive::StructIterTools;
 
+// Default just for demonstration
+#[derive(StructIterTools, Default)]
+#[StructFields]
+#[StructValues]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    {...}
+}
+
 enum FooEnum {
   I32(i32),
   String(String),
@@ -109,6 +135,7 @@ impl From<String> for FooEnum {
         FooEnum::String(value)
     }
 }
+{...}
 
 let instance = Foo::default();
 
@@ -137,7 +164,6 @@ you can just add the derive to it
 use struct_tools_derive::StructEnum;
 
 #[derive(StructEnum)]
-#[EnumDerives()]
 pub struct Foo{
     field1: i32,
     field2: String,

@@ -3,21 +3,16 @@ use std::fmt::Display;
 use struct_tools_derive::{StructEnum, StructIterTools};
 
 #[derive(StructIterTools, StructEnum)]
-#[EnumDerives(Debug)]
+#[StructFields]
+#[StructValues]
+#[EnumDerives(Debug, Clone)]
 pub struct Book {
     id: u64,
     title: String,
     pages: u64,
     author: String,
 }
-impl Book {
-    pub fn test<E>(&self) -> E
-    where
-        E: From<u64>,
-    {
-        E::from(self.id)
-    }
-}
+
 #[derive(Debug)]
 pub enum BookEnumTest {
     U64(u64),
