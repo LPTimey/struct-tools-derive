@@ -45,7 +45,7 @@ impl Display for BookEnumTest {
 fn fields() {
     let fields = Book::fields();
     println!("fields: {fields:?}");
-    assert_eq!(vec!["id", "title", "pages", "author"], fields)
+    assert_eq!(vec!["id", "title", "pages", "author", "inspirations"], fields)
 }
 
 #[test]
