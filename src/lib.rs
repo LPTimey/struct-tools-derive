@@ -2,8 +2,8 @@ use itertools::Itertools;
 use proc_macro::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
-    self, parse_macro_input, Data::Struct, DataStruct, DeriveInput, Fields::Named, FieldsNamed,
-    Ident, Type, Attribute,
+    self, parse_macro_input, Attribute, Data::Struct, DataStruct, DeriveInput, Fields::Named,
+    FieldsNamed, Ident, Type,
 };
 
 #[doc = r#"If you have a struct
@@ -123,7 +123,10 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         attrs, ident, data, ..
     } = parse_macro_input!(input as DeriveInput);
 
-    let attrs: Vec<String> = attrs.iter().map(|attr| attr.path.get_ident().unwrap().to_string()).collect();
+    let attrs: Vec<String> = attrs
+        .iter()
+        .map(|attr| attr.path.get_ident().unwrap().to_string())
+        .collect();
 
     let derive_fields: bool = attrs.contains(&"StructFields".to_string());
     let derive_values: bool = attrs.contains(&"StructValues".to_string());
@@ -150,7 +153,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         .collect::<Vec<String>>();
 
     let fields_quote = match derive_fields {
-        true => Some(quote!{
+        true => Some(quote! {
             impl #ident {
                 pub fn fields() -> ::std::vec::Vec<::std::string::String>{
                     vec![#(#fields_vec.to_string()),*]
@@ -160,7 +163,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         false => None,
     };
     let values_quote = match derive_values {
-        true => Some(quote!{
+        true => Some(quote! {
             impl #ident{
                 pub fn values<E>(&self) -> ::std::vec::Vec<E>
                 where
@@ -172,8 +175,8 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         }),
         false => None,
     };
-    let fields_and_values_quote = match derive_fields==true && derive_values==true {
-        true => Some(quote!{
+    let fields_and_values_quote = match derive_fields == true && derive_values == true {
+        true => Some(quote! {
             impl #ident{
                 pub fn fields_and_values<E>(&self) -> ::std::vec::Vec<(::std::string::String, E)>
                 where
@@ -189,12 +192,12 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         false => None,
     };
     let result = quote! {
-            #fields_quote
+        #fields_quote
 
-            #values_quote
+        #values_quote
 
-            #fields_and_values_quote
-        };
+        #fields_and_values_quote
+    };
     result.into()
 }
 
@@ -257,17 +260,21 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
 
     //println!("{attrs:?}\n");
 
-    let attr: Vec<Attribute> = attrs.clone().into_iter().filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerives").collect();
+    let attr: Vec<Attribute> = attrs
+        .clone()
+        .into_iter()
+        .filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerives")
+        .collect();
     //println!("{attr:?}\n");
 
     let ident = Ident::new(&(ident.to_string() + "Enum"), ident.span());
 
     let derives = match attr.is_empty() {
         false => Some(attr.into_iter().map(|attr| attr.tokens)),
-        true => None
+        true => None,
     };
-    let derives = match derives{
-        Some(iter) => Some(quote!{#[derive #(#iter),*]}),
+    let derives = match derives {
+        Some(iter) => Some(quote! {#[derive #(#iter),*]}),
         None => None,
     };
 
@@ -295,11 +302,16 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
                 .map(|(i, chr)| {
                     if i == 0 {
                         chr.to_uppercase().to_string()
+                    //} else if vec!['<','>','(',')','[',']'].contains(&chr){
+                    //    String::new()
+                    } else if !chr.is_ascii_alphabetic() && !chr.is_ascii_alphanumeric() {
+                        String::new()
                     } else {
                         chr.to_string()
                     }
                 })
                 .collect::<String>();
+            let string = string.replace(" ", "");
             Ident::new(&string, Span::call_site().into())
         })
         .collect::<Vec<Ident>>();
@@ -318,6 +330,6 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
             }
         })*
     };
-    //println!("{result}");
+    println!("{result}");
     result.into()
 }
