@@ -245,7 +245,7 @@ you can also have it derive traits by adding them to the `EnumDerives` attribute
 ```rust
 # use struct_tools_derive::{StructEnum, StructIterTools};
 #[derive(StructEnum)]
-#[EnumDerives(Debug)]
+#[EnumDerive(Debug)]
 pub struct Foo{
     field1: i32,
     field2: String,

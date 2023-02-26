@@ -200,7 +200,7 @@ you can also have it derive traits by adding them to the `EnumDerives` attribute
 
 ```rust
 #[derive(StructEnum)]
-#[EnumDerives(Debug)]
+#[EnumDerive(Debug)]
 pub struct Foo{
     field1: i32,
     field2: String,
