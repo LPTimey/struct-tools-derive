@@ -251,7 +251,7 @@ pub struct Foo{
     field2: String,
 }
 ```"]
-#[proc_macro_derive(StructEnum, attributes(EnumDerives))]
+#[proc_macro_derive(StructEnum, attributes(EnumDerive))]
 pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let DeriveInput {
@@ -263,7 +263,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let attr: Vec<Attribute> = attrs
         .clone()
         .into_iter()
-        .filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerives")
+        .filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerive")
         .collect();
     //println!("{attr:?}\n");
 

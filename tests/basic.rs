@@ -5,7 +5,7 @@ use struct_tools_derive::{StructEnum, StructIterTools};
 #[derive(StructIterTools, StructEnum)]
 #[StructFields]
 #[StructValues]
-#[EnumDerives(Debug, Clone)]
+#[EnumDerive(Debug, Clone)]
 pub struct Book {
     id: u64,
     title: String,
