@@ -10,6 +10,7 @@ Table of Contents
       - [values](#values)
       - [fields and values](#fields-and-values)
     - [StructEnum](#structenum)
+    - [StructFieldEnum](#structfieldenum)
 
 ## Contains
 
@@ -22,6 +23,7 @@ currently contains:
   - `values`<`E`> (`&self`) -> Vec<`E`>: A Method that returns the values of its Instance
   - `fields_and_values`<`E`> (`&self`) -> Vec<`(String, E)`>: A Method that returns a Touple of the field and the values of its Instance
 - StructEnum
+- StructFieldEnum
 
 ## How to use
 
@@ -207,3 +209,9 @@ pub struct Foo{
     {...}
 }
 ```
+
+---
+
+### StructFieldEnum
+
+todo!()

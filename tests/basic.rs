@@ -1,8 +1,8 @@
 #![allow(unused)]
 use std::fmt::Display;
-use struct_tools_derive::{StructEnum, StructIterTools};
+use struct_tools_derive::{StructEnum, StructIterTools, StructFieldEnum};
 
-#[derive(StructIterTools, StructEnum)]
+#[derive(StructIterTools, StructEnum, StructFieldEnum)]
 #[StructFields]
 #[StructValues]
 #[EnumDerive(Debug, Clone)]
@@ -86,6 +86,12 @@ fn values() {
 #[test]
 fn enum_test() {
     let test = BookEnum::String("()".to_string());
+    println!("{test:?}");
+}
+
+#[test]
+fn field_enum_test() {
+    let test = BookFieldEnum::Id(1);
     println!("{test:?}");
 }
 #[test]

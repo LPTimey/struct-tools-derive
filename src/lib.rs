@@ -330,6 +330,78 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
             }
         })*
     };
+    //println!("{result}");
+    result.into()
+}
+
+#[doc = "todo!()"]
+#[proc_macro_derive(StructFieldEnum, attributes(EnumDerive))]
+pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(input as DeriveInput);
+    let DeriveInput {
+        attrs, ident, data, ..
+    } = ast;
+
+    let ident = Ident::new(&(ident.to_string() + "FieldEnum"), ident.span());
+
+    let attr: Vec<Attribute> = attrs
+        .clone()
+        .into_iter()
+        .filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerive")
+        .collect();
+    let derives = match attr.is_empty() {
+        false => Some(attr.into_iter().map(|attr| attr.tokens)),
+        true => None,
+    };
+    let derives = match derives {
+        Some(iter) => Some(quote! {#[derive #(#iter),*]}),
+        None => None,
+    };
+
+    let fields = match data {
+        Struct(DataStruct {
+            fields: Named(FieldsNamed { ref named, .. }),
+            ..
+        }) => named,
+        _ => todo!(),
+    };
+
+    let fields_vec: std::vec::Vec<std::string::String> = fields
+        .iter()
+        .filter_map(|field| field.ident.as_ref().map(|id| format!("{id}")))
+        .collect::<Vec<String>>();
+
+    let field_types = fields
+        .iter()
+        .map(|field| &field.ty)
+        .collect::<Vec<&Type>>();
+
+    let variants: Vec<String> = fields_vec
+        .into_iter()
+        .map(|field| {
+            field
+                .chars()
+                .enumerate()
+                .filter_map(|(i, chr)| match i {
+                    0 => Some(chr.to_uppercase().to_string()),
+                    _ => match chr == '_' || chr == '-'{
+                        true => None,
+                        false => Some(chr.to_string()),
+                    },
+                })
+                .collect::<String>()
+        })
+        .collect_vec();
+    let variants = variants.into_iter().map(|variant| {
+        let variant = Ident::new(&variant, Span::call_site().into());
+        quote!{#variant}
+    });
+    let result = quote!{
+        #derives
+        pub enum #ident{
+            #(#variants(#field_types)),*
+        }
+    };
     println!("{result}");
     result.into()
 }
