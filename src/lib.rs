@@ -334,7 +334,52 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[doc = "todo!()"]
+#[doc = r"
+Will create an Enum which is capable of containing all possible contents of the struct
+
+# Example
+
+If you have a struct
+
+```rust
+pub struct Foo{
+    field1: i32,
+    field2: String,
+}
+```
+
+you can just add the derive to it
+
+```rust
+use struct_tools_derive::StructFieldEnum;
+
+#[derive(StructFieldEnum)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+}
+```
+
+This Grants you access to an automatically generated Enum with the name `{structname}FieldEnum`.
+
+its Variants are named by CapitalCamelCase-ing the fields of the struct
+
+```rust
+pub enum FooFieldEnum{
+    Field1(i32),
+    Field2(String),
+}
+impl FooFieldEnum {
+    pub fn gen_field1(value: i32) -> Self {
+        FooFieldEnum::Field1(value)
+    }
+
+    pub fn gen_field2(value: String) -> Self {
+        FooFieldEnum::Field2(value)
+    }
+}
+```
+"]
 #[proc_macro_derive(StructFieldEnum, attributes(EnumDerive))]
 pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -377,31 +422,67 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
         .collect::<Vec<&Type>>();
 
     let variants: Vec<String> = fields_vec
-        .into_iter()
+        .iter()
+        .cloned()
         .map(|field| {
             field
                 .chars()
                 .enumerate()
-                .filter_map(|(i, chr)| match i {
-                    0 => Some(chr.to_uppercase().to_string()),
-                    _ => match chr == '_' || chr == '-'{
-                        true => None,
-                        false => Some(chr.to_string()),
-                    },
+                .map(|(i, chr)| match i {
+                    0 => chr.to_uppercase().to_string(),
+                    _ => chr.to_string(),
                 })
                 .collect::<String>()
+        })
+        .map(|mut field|{
+            let i = field.find("_");
+            let mut field = match i {
+                Some(i) => {
+                    field.remove(i);
+                    let mut field = field.chars().map(|chr|chr.to_string()).collect_vec();
+                    match field.get(i){
+                        Some(_) => {field[i] = field[i].to_uppercase().to_string();},
+                        None => (),
+                    }
+                    field.join("")
+                },
+                None => field,
+            };
+            let i = field.find("_");
+            match i {
+                Some(i) => {
+                    field.remove(i);
+                    let mut field = field.chars().map(|chr|chr.to_string()).collect_vec();
+                    match field.get(i){
+                        Some(_) => {field[i] = field[i].to_uppercase().to_string();},
+                        None => (),
+                    }
+                    field.join("")
+                },
+                None => field,
+            }
         })
         .collect_vec();
     let variants = variants.into_iter().map(|variant| {
         let variant = Ident::new(&variant, Span::call_site().into());
         quote!{#variant}
     });
+    let variants2 = variants.clone();
+    let from_functions = fields_vec.iter().cloned().map(|variant|{
+        let variant = Ident::new(&("gen_".to_owned() + &variant), Span::call_site().into());
+        quote!{#variant}
+    });
     let result = quote!{
         #derives
         pub enum #ident{
-            #(#variants(#field_types)),*
+            #(#variants (#field_types)),*
         }
+        #(impl #ident{
+            pub fn #from_functions (value: #field_types) -> Self {
+                #ident :: #variants2 (value)
+            }
+        })*
     };
-    println!("{result}");
+    //println!("{result}");
     result.into()
 }

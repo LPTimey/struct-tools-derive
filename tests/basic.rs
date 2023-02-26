@@ -12,6 +12,7 @@ pub struct Book {
     pages: u64,
     author: String,
     inspirations: Option<Vec<String>>,
+    date_time_: u64,
 }
 
 #[derive(Debug)]
@@ -19,6 +20,11 @@ pub enum BookEnumTest {
     U64(u64),
     String(String),
     OptionVecString(Option<Vec<String>>),
+}
+impl BookEnumTest {
+    pub fn gen_id(value: u64) -> Self {
+        BookEnumTest::U64(value)
+    }
 }
 impl From<u64> for BookEnumTest {
     fn from(value: u64) -> Self {
@@ -45,7 +51,7 @@ impl Display for BookEnumTest {
 fn fields() {
     let fields = Book::fields();
     println!("fields: {fields:?}");
-    assert_eq!(vec!["id", "title", "pages", "author", "inspirations"], fields)
+    assert_eq!(vec!["id", "title", "pages", "author", "inspirations", "date_time_"], fields)
 }
 
 #[test]
@@ -56,6 +62,7 @@ fn values() {
         pages: 100,
         author: "me".to_string(),
         inspirations: None,
+        date_time_: 0,
     };
     let expected = vec![
         BookEnumTest::U64(1),
@@ -63,6 +70,7 @@ fn values() {
         BookEnumTest::U64(100),
         BookEnumTest::String("me".to_string()),
         BookEnumTest::OptionVecString(None),
+        BookEnumTest::U64(0),
     ];
 
     let book_values: Vec<BookEnumTest> = book.values::<BookEnumTest>();
@@ -92,7 +100,9 @@ fn enum_test() {
 #[test]
 fn field_enum_test() {
     let test = BookFieldEnum::Id(1);
+    let test2 = BookFieldEnum::gen_id(1);
     println!("{test:?}");
+    println!("{test2:?}")
 }
 #[test]
 fn enum_values_test() {
@@ -102,6 +112,7 @@ fn enum_values_test() {
         pages: 100,
         author: "me".to_string(),
         inspirations: None,
+        date_time_: 0,
     };
     let expected = vec![
         BookEnum::U64(1),
@@ -109,6 +120,7 @@ fn enum_values_test() {
         BookEnum::U64(100),
         BookEnum::String("me".to_string()),
         BookEnum::OptionVecString(None),
+        BookEnum::U64(0),
     ];
     let book_values: Vec<BookEnum> = book.values::<BookEnum>();
     //println!("fields: {book_values:?}");

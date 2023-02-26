@@ -150,6 +150,8 @@ assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("fi
 
 ### StructEnum
 
+Will create an Enum which is capable of containing all possible contents of the struct
+
 If you have a struct
 
 ```rust
@@ -214,4 +216,50 @@ pub struct Foo{
 
 ### StructFieldEnum
 
-todo!()
+Will create an Enum which is capable of containing all possible contents of the struct
+
+If you have a struct
+
+```rust
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    {...}
+}
+```
+
+you can just add the derive to it
+
+```rust
+use struct_tools_derive::StructFieldEnum;
+
+#[derive(StructFieldEnum)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    {...}
+}
+```
+
+This Grants you access to an automatically generated Enum with the name `{structname}FieldEnum`.
+
+its Variants are named by CapitalCamelCase-ing the fields of the struct
+
+```rust
+pub enum FooFieldEnum{
+    Field1(i32),
+    Field2(String),
+    {...}
+}
+impl FooFieldEnum {
+    pub fn gen_field1(value: i32) -> Self {
+        FooFieldEnum::Field1(value)
+    }
+
+    pub fn gen_field2(value: String) -> Self {
+        FooFieldEnum::Field2(value)
+    }
+
+    {...}
+}
+```
