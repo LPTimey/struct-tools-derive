@@ -6,7 +6,12 @@ use syn::{
     FieldsNamed, Ident, Type,
 };
 
-#[doc = r#"If you have a struct
+#[doc = r#"
+Lets you iterate over structs
+
+# Examples
+
+If you have a struct
 
 ```rust
 pub struct Foo{
@@ -201,7 +206,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[doc = r"
+#[doc = r#"
 Will create an Enum which is capable of containing all possible contents of the struct
 
 # Example
@@ -250,7 +255,7 @@ pub struct Foo{
     field1: i32,
     field2: String,
 }
-```"]
+```"#]
 #[proc_macro_derive(StructEnum, attributes(EnumDerive))]
 pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -334,7 +339,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[doc = r"
+#[doc = r#"
 Will create an Enum which is capable of containing all possible contents of the struct
 
 # Example
@@ -379,7 +384,7 @@ impl FooFieldEnum {
     }
 }
 ```
-"]
+"#]
 #[proc_macro_derive(StructFieldEnum, attributes(EnumDerive))]
 pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);

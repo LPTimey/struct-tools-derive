@@ -29,6 +29,8 @@ currently contains:
 
 ### StructIterTools
 
+Lets you iterate over structs
+
 If you have a struct
 
 ```rust
