@@ -21,7 +21,7 @@ currently contains:
 - StructIterTools
   - `fields` ( ) -> Vec<`String`>: A Function that returns the names of its fields
   - `values`<`E`> (`&self`) -> Vec<`E`>: A Method that returns the values of its Instance
-  - `fields_and_values`<`E`> (`&self`) -> Vec<`(String, E)`>: A Method that returns a Touple of the field and the values of its Instance
+  - `fields_and_values`<`E`> (`&self`) -> Vec<`(String, E)`>: A Method that returns a Vector of Touples of the field and the values of its Instance
 - StructEnum
 - StructFieldEnum
 
