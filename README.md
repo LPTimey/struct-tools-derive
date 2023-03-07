@@ -253,15 +253,15 @@ pub enum FooFieldEnum{
     Field2(String),
     {...}
 }
-impl FooFieldEnum {
-    pub fn gen_field1(value: i32) -> Self {
-        FooFieldEnum::Field1(value)
-    }
+```
 
-    pub fn gen_field2(value: String) -> Self {
-        FooFieldEnum::Field2(value)
-    }
+you can also have it derive traits by adding them to the `EnumDerives` attribute like this:
 
-    {...}
+```rust
+#[derive(StructFieldEnum)]
+#[EnumDerive(Debug)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
 }
 ```
