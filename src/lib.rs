@@ -374,14 +374,17 @@ pub enum FooFieldEnum{
     Field1(i32),
     Field2(String),
 }
-impl FooFieldEnum {
-    pub fn gen_field1(value: i32) -> Self {
-        FooFieldEnum::Field1(value)
-    }
+```
 
-    pub fn gen_field2(value: String) -> Self {
-        FooFieldEnum::Field2(value)
-    }
+you can also have it derive traits by adding them to the `EnumDerives` attribute like this:
+
+```rust
+# use struct_tools_derive::{StructFieldEnum, StructIterTools};
+#[derive(StructFieldEnum)]
+#[EnumDerive(Debug)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
 }
 ```
 "#]
@@ -472,21 +475,11 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
         let variant = Ident::new(&variant, Span::call_site().into());
         quote!{#variant}
     });
-    let variants2 = variants.clone();
-    let from_functions = fields_vec.iter().cloned().map(|variant|{
-        let variant = Ident::new(&("gen_".to_owned() + &variant), Span::call_site().into());
-        quote!{#variant}
-    });
     let result = quote!{
         #derives
         pub enum #ident{
             #(#variants (#field_types)),*
         }
-        #(impl #ident{
-            pub fn #from_functions (value: #field_types) -> Self {
-                #ident :: #variants2 (value)
-            }
-        })*
     };
     //println!("{result}");
     result.into()
