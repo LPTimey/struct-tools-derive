@@ -130,7 +130,9 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 
     let attrs: Vec<String> = attrs
         .iter()
-        .map(|attr| attr.path.get_ident().unwrap().to_string())
+        .map(|attr| attr.path.get_ident())
+        .flatten()
+        .map(|attr| attr.to_string())
         .collect();
 
     let derive_fields: bool = attrs.contains(&"StructFields".to_string());
