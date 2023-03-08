@@ -100,9 +100,7 @@ fn enum_test() {
 #[test]
 fn field_enum_test() {
     let test = BookFieldEnum::Id(1);
-    let test2 = BookFieldEnum::gen_id(1);
-    println!("{test:?}");
-    println!("{test2:?}")
+    println!("{test:?}")
 }
 #[test]
 fn enum_values_test() {
