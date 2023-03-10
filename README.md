@@ -11,6 +11,7 @@ Table of Contents
       - [fields and values](#fields-and-values)
     - [StructEnum](#structenum)
     - [StructFieldEnum](#structfieldenum)
+    - [StructBuilder](#structbuilder)
 
 ## Contains
 
@@ -24,6 +25,7 @@ currently contains:
   - `fields_and_values`<`E`> (`&self`) -> Vec<`(String, E)`>: A Method that returns a Vector of Touples of the field and the values of its Instance
 - StructEnum
 - StructFieldEnum
+- StructBuilder
 
 ## How to use
 
@@ -265,3 +267,9 @@ pub struct Foo{
     field2: String,
 }
 ```
+
+---
+
+### StructBuilder
+
+TODO!

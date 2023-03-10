@@ -208,6 +208,111 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     result.into()
 }
 
+/**
+
+*/
+#[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive))]
+pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
+    let DeriveInput {
+        attrs, ident, data, ..
+    } = parse_macro_input!(input as DeriveInput);
+
+    let new_ident = Ident::new(&(ident.to_string() + "Builder"), ident.span());
+    let error = Ident::new(&(new_ident.to_string() + "Error"), new_ident.span());
+
+    let attr_strings: Vec<String> = attrs
+        .iter()
+        .map(|attr| attr.path.get_ident())
+        .flatten()
+        .map(|attr| attr.to_string())
+        .collect();
+    let get_fields = attr_strings.contains(&"StructFields".to_owned());
+    let get_derives = attr_strings.contains(&"BuilderDerive".to_owned());
+
+    let derives = if get_derives {
+        let iter = attrs
+            .iter()
+            .filter(|attr| attr.path.get_ident().unwrap().to_string() == "BuilderDerive")
+            .collect_vec();
+        Some(quote!(#[derive #(#iter),*]))
+    } else {
+        None
+    };
+
+    let fields = match data {
+        Struct(DataStruct {
+            fields: Named(FieldsNamed { ref named, .. }),
+            ..
+        }) => named,
+        _ => todo!(),
+    };
+
+    let field_types = fields.iter().cloned().map(|field| field.ty).collect_vec();
+    let field_names = fields
+        .iter()
+        .cloned()
+        .flat_map(|field| field.ident)
+        .collect_vec();
+
+    let set = field_names
+        .iter()
+        .cloned()
+        .map(|ident| Ident::new(&("set_".to_owned() + &ident.to_string()), ident.span()))
+        .collect_vec();
+
+    let result = match get_fields {
+        true => quote! {
+
+            #[allow(non_camel_case_types)]
+            #[derive(Debug)]
+            pub enum #error {
+
+                #(#field_names),*
+
+            }
+            impl ::std::fmt::Display for #error {
+                fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                    write!(f, "{:?}", self)
+                }
+            }
+            impl ::std::error::Error for #error {}
+
+            #derives
+            #[derive(Default)]
+            pub struct #new_ident{
+                #(#field_names : Option< #field_types >),*
+            }
+            impl #new_ident{
+                pub fn build(self) -> Result< #ident , ::std::vec::Vec< #error > > {
+
+                    let mut errors: ::std::vec::Vec< #error > = ::std::vec::Vec::new();
+
+                    #(match self. #field_names{
+                        Some(_) => (),
+                        None => errors.push( #error :: #field_names),
+                    };)*
+
+                    match errors.is_empty(){
+                        true => Ok(
+                                    #ident {
+                                        #(#field_names: self. #field_names .unwrap()),*
+                                    }
+                                ),
+                        false => Err(errors)
+                    }
+                }
+                #(pub fn #set (mut self, #field_names: #field_types) -> #new_ident {
+                    self. #field_names = Some( #field_names );
+                    self
+                })*
+            }
+        },
+        false => panic!("Attribute: \"StructFields\" is not set"),
+    };
+    println!("{result}");
+    result.into()
+}
+
 #[doc = r#"
 Will create an Enum which is capable of containing all possible contents of the struct
 
@@ -426,10 +531,7 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
         .filter_map(|field| field.ident.as_ref().map(|id| format!("{id}")))
         .collect::<Vec<String>>();
 
-    let field_types = fields
-        .iter()
-        .map(|field| &field.ty)
-        .collect::<Vec<&Type>>();
+    let field_types = fields.iter().map(|field| &field.ty).collect::<Vec<&Type>>();
 
     let variants: Vec<String> = fields_vec
         .iter()
@@ -444,40 +546,44 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
                 })
                 .collect::<String>()
         })
-        .map(|mut field|{
+        .map(|mut field| {
             let i = field.find("_");
             let mut field = match i {
                 Some(i) => {
                     field.remove(i);
-                    let mut field = field.chars().map(|chr|chr.to_string()).collect_vec();
-                    match field.get(i){
-                        Some(_) => {field[i] = field[i].to_uppercase().to_string();},
+                    let mut field = field.chars().map(|chr| chr.to_string()).collect_vec();
+                    match field.get(i) {
+                        Some(_) => {
+                            field[i] = field[i].to_uppercase().to_string();
+                        }
                         None => (),
                     }
                     field.join("")
-                },
+                }
                 None => field,
             };
             let i = field.find("_");
             match i {
                 Some(i) => {
                     field.remove(i);
-                    let mut field = field.chars().map(|chr|chr.to_string()).collect_vec();
-                    match field.get(i){
-                        Some(_) => {field[i] = field[i].to_uppercase().to_string();},
+                    let mut field = field.chars().map(|chr| chr.to_string()).collect_vec();
+                    match field.get(i) {
+                        Some(_) => {
+                            field[i] = field[i].to_uppercase().to_string();
+                        }
                         None => (),
                     }
                     field.join("")
-                },
+                }
                 None => field,
             }
         })
         .collect_vec();
     let variants = variants.into_iter().map(|variant| {
         let variant = Ident::new(&variant, Span::call_site().into());
-        quote!{#variant}
+        quote! {#variant}
     });
-    let result = quote!{
+    let result = quote! {
         #derives
         pub enum #ident{
             #(#variants (#field_types)),*

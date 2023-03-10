@@ -1,8 +1,8 @@
 #![allow(unused)]
 use std::fmt::Display;
-use struct_tools_derive::{StructEnum, StructIterTools, StructFieldEnum};
+use struct_tools_derive::{StructBuilder, StructEnum, StructFieldEnum, StructIterTools};
 
-#[derive(StructIterTools, StructEnum, StructFieldEnum)]
+#[derive(Debug, PartialEq, StructIterTools, StructEnum, StructFieldEnum, StructBuilder)]
 #[StructFields]
 #[StructValues]
 #[EnumDerive(Debug, Clone)]
@@ -51,7 +51,17 @@ impl Display for BookEnumTest {
 fn fields() {
     let fields = Book::fields();
     println!("fields: {fields:?}");
-    assert_eq!(vec!["id", "title", "pages", "author", "inspirations", "date_time_"], fields)
+    assert_eq!(
+        vec![
+            "id",
+            "title",
+            "pages",
+            "author",
+            "inspirations",
+            "date_time_"
+        ],
+        fields
+    )
 }
 
 #[test]
@@ -136,4 +146,26 @@ fn enum_values_test() {
         .is_empty();
 
     assert!(success)
+}
+
+#[test]
+fn builder_test() {
+    let book = Book {
+        id: 1,
+        title: "Title".to_string(),
+        pages: 100,
+        author: "me".to_string(),
+        inspirations: None,
+        date_time_: 0,
+    };
+    let mut builder = BookBuilder::default()
+        .set_author("me".to_string())
+        .set_date_time_(0)
+        .set_id(1)
+        .set_inspirations(None)
+        .set_pages(100)
+        .set_title("Title".to_string())
+        .build()
+        .unwrap();
+    assert_eq!(book, builder)
 }
