@@ -211,11 +211,13 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 /**
 
 */
-#[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive))]
+#[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive, Default))]
 pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
     let DeriveInput {
         attrs, ident, data, ..
     } = parse_macro_input!(input as DeriveInput);
+
+    // TODO: Make atributes for adding default values to specific fields
 
     let new_ident = Ident::new(&(ident.to_string() + "Builder"), ident.span());
     let error = Ident::new(&(new_ident.to_string() + "Error"), new_ident.span());
