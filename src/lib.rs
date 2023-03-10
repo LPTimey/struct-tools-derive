@@ -309,7 +309,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
         },
         false => panic!("Attribute: \"StructFields\" is not set"),
     };
-    println!("{result}");
+    //println!("{result}");
     result.into()
 }
 
