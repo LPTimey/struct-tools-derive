@@ -272,4 +272,39 @@ pub struct Foo{
 
 ### StructBuilder
 
+Will create a BuilderPattern Struct.
+
+If you have a struct
+
+```rust
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    {...}
+}
+```
+
+you can just add the derive to it
+
+```rust
+use struct_tools_derive::StructBuilder;
+
+#[derive(StructBuilder)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    {...}
+}
+```
+
+This Grants you access to an automatically generated struct with the name `{structname}Builder`.
+
+```rust
+pub struct FooBuilder{
+    field1: Option<i32>,
+    field2: Option<String>,
+    {...}
+}
+```
+
 TODO!
