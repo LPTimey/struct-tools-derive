@@ -9,10 +9,24 @@ use struct_tools_derive::{StructBuilder, StructEnum, StructFieldEnum, StructIter
 pub struct Book {
     id: u64,
     title: String,
+    #[default(0)]
     pages: u64,
     author: String,
+    #[default(None)]
     inspirations: Option<Vec<String>>,
     date_time_: u64,
+}
+impl Default for Book {
+    fn default() -> Self {
+        Self {
+            id: Default::default(),
+            title: Default::default(),
+            pages: Default::default(),
+            author: Default::default(),
+            inspirations: Default::default(),
+            date_time_: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug)]

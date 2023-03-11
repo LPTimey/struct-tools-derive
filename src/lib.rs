@@ -211,13 +211,11 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 /**
 
 */
-#[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive, Default))]
+#[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive, default))]
 pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
     let DeriveInput {
         attrs, ident, data, ..
     } = parse_macro_input!(input as DeriveInput);
-
-    // TODO: Make atributes for adding default values to specific fields
 
     let new_ident = Ident::new(&(ident.to_string() + "Builder"), ident.span());
     let error = Ident::new(&(new_ident.to_string() + "Error"), new_ident.span());
@@ -228,17 +226,20 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
         .flatten()
         .map(|attr| attr.to_string())
         .collect();
+    //println!("{:#?}; {:#?}",attr_strings, attrs);
+
     let get_fields = attr_strings.contains(&"StructFields".to_owned());
     let get_derives = attr_strings.contains(&"BuilderDerive".to_owned());
 
-    let derives = if get_derives {
-        let iter = attrs
-            .iter()
-            .filter(|attr| attr.path.get_ident().unwrap().to_string() == "BuilderDerive")
-            .collect_vec();
-        Some(quote!(#[derive #(#iter),*]))
-    } else {
-        None
+    let derives = match get_derives {
+        true => {
+            let iter = attrs
+                .iter()
+                .filter(|attr| attr.path.get_ident().unwrap().to_string() == "BuilderDerive")
+                .collect_vec();
+            Some(quote!(#[derive #(#iter),*]))
+        }
+        false => None,
     };
 
     let fields = match data {
@@ -248,6 +249,30 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
         }) => named,
         _ => todo!(),
     };
+    //println!("{:#?}",fields);
+
+    let field_defaults = fields
+        .iter()
+        .cloned()
+        .map(|field| {
+            let defaults = field
+                .attrs
+                .iter()
+                .cloned()
+                .filter(|attr| attr.path.get_ident().unwrap().to_string() == "default")
+                .map(|attr| attr.tokens)
+                .collect_vec();
+            (field.ident.unwrap(), defaults)
+        })
+        .map(|(field, attrs)| match attrs.is_empty() {
+            true => quote!(#field: None),
+            false => {
+                let default = attrs[0].clone();
+                quote!(#field: Some(#default))
+            }
+        })
+        .collect_vec();
+    //println!("{:?}", field_defaults);
 
     let field_types = fields.iter().cloned().map(|field| field.ty).collect_vec();
     let field_names = fields
@@ -280,9 +305,15 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
             impl ::std::error::Error for #error {}
 
             #derives
-            #[derive(Default)]
             pub struct #new_ident{
                 #(#field_names : Option< #field_types >),*
+            }
+            impl Default for #new_ident{
+                fn default() -> Self {
+                    Self {
+                        #( #field_defaults ),*
+                    }
+                }
             }
             impl #new_ident{
                 pub fn build(self) -> Result< #ident , ::std::vec::Vec< #error > > {
