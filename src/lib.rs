@@ -130,8 +130,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 
     let attrs: Vec<String> = attrs
         .iter()
-        .map(|attr| attr.path.get_ident())
-        .flatten()
+        .filter_map(|attr| attr.path.get_ident())
         .map(|attr| attr.to_string())
         .collect();
 
@@ -182,7 +181,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         }),
         false => None,
     };
-    let fields_and_values_quote = match derive_fields == true && derive_values == true {
+    let fields_and_values_quote = match derive_fields && derive_values {
         true => Some(quote! {
             impl #ident{
                 pub fn fields_and_values<E>(&self) -> ::std::vec::Vec<(::std::string::String, E)>
@@ -222,8 +221,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
 
     let attr_strings: Vec<String> = attrs
         .iter()
-        .map(|attr| attr.path.get_ident())
-        .flatten()
+        .filter_map(|attr| attr.path.get_ident())
         .map(|attr| attr.to_string())
         .collect();
     //println!("{:#?}; {:#?}",attr_strings, attrs);
@@ -235,7 +233,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
         true => {
             let iter = attrs
                 .iter()
-                .filter(|attr| attr.path.get_ident().unwrap().to_string() == "BuilderDerive")
+                .filter(|attr| *attr.path.get_ident().unwrap() == "BuilderDerive")
                 .collect_vec();
             Some(quote!(#[derive #(#iter),*]))
         }
@@ -259,7 +257,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
                 .attrs
                 .iter()
                 .cloned()
-                .filter(|attr| attr.path.get_ident().unwrap().to_string() == "default")
+                .filter(|attr| *attr.path.get_ident().unwrap() == "default")
                 .map(|attr| attr.tokens)
                 .collect_vec();
             (field.ident.unwrap(), defaults)
@@ -406,9 +404,8 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     //println!("{attrs:?}\n");
 
     let attr: Vec<Attribute> = attrs
-        .clone()
         .into_iter()
-        .filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerive")
+        .filter(|attr| *attr.path.get_ident().unwrap() == "EnumDerive")
         .collect();
     //println!("{attr:?}\n");
 
@@ -418,10 +415,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
         false => Some(attr.into_iter().map(|attr| attr.tokens)),
         true => None,
     };
-    let derives = match derives {
-        Some(iter) => Some(quote! {#[derive #(#iter),*]}),
-        None => None,
-    };
+    let derives = derives.map(|iter| quote! {#[derive #(#iter),*]});
 
     let fields = match data {
         Struct(DataStruct {
@@ -456,7 +450,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
                     }
                 })
                 .collect::<String>();
-            let string = string.replace(" ", "");
+            let string = string.replace(' ', "");
             Ident::new(&string, Span::call_site().into())
         })
         .collect::<Vec<Ident>>();
@@ -538,18 +532,14 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     let ident = Ident::new(&(ident.to_string() + "FieldEnum"), ident.span());
 
     let attr: Vec<Attribute> = attrs
-        .clone()
         .into_iter()
-        .filter(|attr| attr.path.get_ident().unwrap().to_string() == "EnumDerive")
+        .filter(|attr| *attr.path.get_ident().unwrap() == "EnumDerive")
         .collect();
     let derives = match attr.is_empty() {
         false => Some(attr.into_iter().map(|attr| attr.tokens)),
         true => None,
     };
-    let derives = match derives {
-        Some(iter) => Some(quote! {#[derive #(#iter),*]}),
-        None => None,
-    };
+    let derives = derives.map(|iter| quote! {#[derive #(#iter),*]});
 
     let fields = match data {
         Struct(DataStruct {
@@ -580,31 +570,25 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
                 .collect::<String>()
         })
         .map(|mut field| {
-            let i = field.find("_");
+            let i = field.find('_');
             let mut field = match i {
                 Some(i) => {
                     field.remove(i);
                     let mut field = field.chars().map(|chr| chr.to_string()).collect_vec();
-                    match field.get(i) {
-                        Some(_) => {
-                            field[i] = field[i].to_uppercase().to_string();
-                        }
-                        None => (),
+                    if field.get(i).is_some() {
+                        field[i] = field[i].to_uppercase();
                     }
                     field.join("")
                 }
                 None => field,
             };
-            let i = field.find("_");
+            let i = field.find('_');
             match i {
                 Some(i) => {
                     field.remove(i);
                     let mut field = field.chars().map(|chr| chr.to_string()).collect_vec();
-                    match field.get(i) {
-                        Some(_) => {
-                            field[i] = field[i].to_uppercase().to_string();
-                        }
-                        None => (),
+                    if field.get(i).is_some() {
+                        field[i] = field[i].to_uppercase();
                     }
                     field.join("")
                 }
