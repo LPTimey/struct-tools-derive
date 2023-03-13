@@ -305,6 +305,34 @@ pub struct FooBuilder{
     field2: Option<String>,
     {...}
 }
+impl Default for FooBuilder{...}
+impl FooBuilder {
+    pub fn build(self) -> Result<Foo, Vec<FooBuilderError>>{...}
+    pub fn set_field1(mut self, val:i32) -> Self{
+        self.field1 = Some(val);
+        self
+    }
+    pub fn set_field2(mut self, val:String) -> Self{
+        self.field2 = Some(val);
+        self
+    }
+    {...}
+}
+```
+
+If you want specific fields to have specific Defaultvalues you can add the default-Attribute to it like this:
+
+```rust
+use struct_tools_derive::StructFieldEnum;
+
+#[derive(StructFieldEnum)]
+pub struct Foo{
+    #[default(1)]
+    field1: i32,
+    #[default("Hello".to_owned())]
+    field2: String,
+    {...}
+}
 ```
 
 TODO!
