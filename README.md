@@ -280,7 +280,7 @@ If you have a struct
 pub struct Foo{
     field1: i32,
     field2: String,
-    {...}
+    //{...}
 }
 ```
 
@@ -290,24 +290,44 @@ you can just add the derive to it
 use struct_tools_derive::StructBuilder;
 
 #[derive(StructBuilder)]
+#[StructFields]
 pub struct Foo{
     field1: i32,
     field2: String,
-    {...}
+    //{...}
 }
 ```
 
 This Grants you access to an automatically generated struct with the name `{structname}Builder`.
 
 ```rust
+
+#[allow(non_camel_case_types)]
+#[derive(Debug)]
+pub enum FooBuilderError {
+    field1,
+    field2,
+    //{...}
+}
+impl std::fmt::Display for FooBuilderError {
+    //{...}
+}
+impl std::error::Error for FooBuilderError {}
+
 pub struct FooBuilder{
     field1: Option<i32>,
     field2: Option<String>,
-    {...}
+    //{...}
 }
-impl Default for FooBuilder{...}
+impl Default for FooBuilder{
+    fn default() -> Self {
+        /*...*/
+    }
+}
 impl FooBuilder {
-    pub fn build(self) -> Result<Foo, Vec<FooBuilderError>>{...}
+    pub fn build(self) -> Result<Foo, Vec<FooBuilderError>>{
+        //{...}
+    }
     pub fn set_field1(mut self, val:i32) -> Self{
         self.field1 = Some(val);
         self
@@ -316,22 +336,23 @@ impl FooBuilder {
         self.field2 = Some(val);
         self
     }
-    {...}
+    //{...}
 }
 ```
 
-If you want specific fields to have specific Defaultvalues you can add the default-Attribute to it like this:
+If you want specific fields to have specific Default-values you can add the default-Attribute to it like this:
 
 ```rust
-use struct_tools_derive::StructFieldEnum;
+use struct_tools_derive::{StructFieldEnum, StructBuilder};
 
-#[derive(StructFieldEnum)]
+#[derive(StructFieldEnum, StructBuilder)]
+#[StructFields]
 pub struct Foo{
     #[default(1)]
     field1: i32,
     #[default("Hello".to_owned())]
     field2: String,
-    {...}
+    //{...}
 }
 ```
 

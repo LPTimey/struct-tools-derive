@@ -3,10 +3,10 @@ use proc_macro::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
     self, parse_macro_input, Attribute, Data::Struct, DataStruct, DeriveInput, Fields::Named,
-    FieldsNamed, Ident, Type
+    FieldsNamed, Ident, Type,
 };
 
-#[doc = r#"
+/**
 Lets you iterate over structs
 
 # Examples
@@ -17,6 +17,7 @@ If you have a struct
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 ```
 
@@ -29,6 +30,7 @@ use struct_tools_derive::StructIterTools;
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 ```
 
@@ -44,6 +46,7 @@ use struct_tools_derive::StructIterTools;
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 
 let fields = Foo::fields();
@@ -61,12 +64,14 @@ use struct_tools_derive::StructIterTools;
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 
 #[derive(Debug, Eq, PartialEq)]
 enum FooEnum {
   I32(i32),
   String(String),
+    //{...}
 }
 impl From<i32> for FooEnum {
     fn from(value: i32) -> Self {
@@ -78,6 +83,7 @@ impl From<String> for FooEnum {
         FooEnum::String(value)
     }
 }
+//{...}
 
 let instance = Foo::default();
 
@@ -98,12 +104,14 @@ use struct_tools_derive::StructIterTools;
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 
 #[derive(Debug, Eq, PartialEq)]
 enum FooEnum {
-  I32(i32),
-  String(String),
+    I32(i32),
+    String(String),
+    //{...}
 }
 impl From<i32> for FooEnum {
     fn from(value: i32) -> Self {
@@ -115,13 +123,14 @@ impl From<String> for FooEnum {
         FooEnum::String(value)
     }
 }
+//{...}
 
 let instance = Foo::default();
 
 let f_v = instance.fields_and_values::<FooEnum>();
 
 assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new()))])
-```"#]
+*/
 #[proc_macro_derive(StructIterTools, attributes(StructFields, StructValues))]
 pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     let DeriveInput {
@@ -205,7 +214,102 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 }
 
 /**
+Will create a BuilderPattern Struct.
 
+If you have a struct
+
+```rust
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    //{...}
+}
+```
+
+you can just add the derive to it
+
+```rust
+use struct_tools_derive::StructBuilder;
+
+#[derive(StructBuilder)]
+#[StructFields]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    //{...}
+}
+```
+
+This Grants you access to an automatically generated struct with the name `{structname}Builder`.
+
+```rust
+
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+#     //{...}
+# }
+
+#[allow(non_camel_case_types)]
+#[derive(Debug)]
+pub enum FooBuilderError {
+    field1,
+    field2,
+    //{...}
+}
+impl std::fmt::Display for FooBuilderError {
+#     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+#         write!(f, "{:?}", self)
+#     }
+    //{...}
+}
+impl std::error::Error for FooBuilderError {}
+
+pub struct FooBuilder{
+    field1: Option<i32>,
+    field2: Option<String>,
+    //{...}
+}
+impl Default for FooBuilder{
+    fn default() -> Self {
+        /*{...}*/
+#         todo!()
+    }
+}
+impl FooBuilder {
+    pub fn build(self) -> Result<Foo, Vec<FooBuilderError>>{
+        //{...}
+        # todo!()
+    }
+    pub fn set_field1(mut self, val:i32) -> Self{
+        self.field1 = Some(val);
+        self
+    }
+    pub fn set_field2(mut self, val:String) -> Self{
+        self.field2 = Some(val);
+        self
+    }
+    //{...}
+}
+```
+
+If you want specific fields to have specific Default-values you can add the default-Attribute to it like this:
+
+```rust
+use struct_tools_derive::{StructFieldEnum, StructBuilder};
+
+#[derive(StructFieldEnum, StructBuilder)]
+#[StructFields]
+pub struct Foo{
+    #[default(1)]
+    field1: i32,
+    #[default("Hello".to_owned())]
+    field2: String,
+    //{...}
+}
+```
+
+TODO!
 */
 #[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive, default))]
 pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
@@ -341,7 +445,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[doc = r#"
+/**
 Will create an Enum which is capable of containing all possible contents of the struct
 
 # Example
@@ -353,6 +457,7 @@ use struct_tools_derive::StructEnum;
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 ```
 
@@ -364,6 +469,7 @@ its Variants are named by Capitalizing the first letter of the respective Type
 pub enum FooEnum{
     I32(i32),
     String(String),
+    //{...}
 }
 impl From<i32> for FooEnum {
     fn from(value: i32) -> Self {
@@ -375,6 +481,7 @@ impl From<String> for FooEnum {
         FooEnum::String(value)
     }
 }
+//{...}
 
 ```
 
@@ -389,8 +496,9 @@ you can also have it derive traits by adding them to the `EnumDerives` attribute
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
-```"#]
+*/
 #[proc_macro_derive(StructEnum, attributes(EnumDerive))]
 pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -409,7 +517,10 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     let ident = Ident::new(&(ident.to_string() + "Enum"), ident.span());
 
     let derives = match attr.is_empty() {
-        false => Some(attr.into_iter().flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())),
+        false => Some(
+            attr.into_iter()
+                .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>()),
+        ),
         true => None,
     };
     let derives = derives.map(|iter| quote! {#[derive (#(#iter),*)]});
@@ -470,7 +581,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[doc = r#"
+/**
 Will create an Enum which is capable of containing all possible contents of the struct
 
 # Example
@@ -481,6 +592,7 @@ If you have a struct
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 ```
 
@@ -493,6 +605,7 @@ use struct_tools_derive::StructFieldEnum;
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 ```
 
@@ -504,6 +617,7 @@ its Variants are named by CapitalCamelCase-ing the fields of the struct
 pub enum FooFieldEnum{
     Field1(i32),
     Field2(String),
+    //{...}
 }
 ```
 
@@ -516,9 +630,10 @@ you can also have it derive traits by adding them to the `EnumDerives` attribute
 pub struct Foo{
     field1: i32,
     field2: String,
+    //{...}
 }
 ```
-"#]
+*/
 #[proc_macro_derive(StructFieldEnum, attributes(EnumDerive))]
 pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -530,10 +645,13 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
 
     let attr: Vec<Attribute> = attrs
         .into_iter()
-        .filter(|attr| *attr.path().get_ident().unwrap() == "EnumDerive")
+        .filter(|attr| attr.path().is_ident("EnumDerive"))
         .collect();
     let derives = match attr.is_empty() {
-        false => Some(attr.into_iter().flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())),
+        false => Some(
+            attr.into_iter()
+                .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>()),
+        ),
         true => None,
     };
     let derives = derives.map(|iter| quote! {#[derive (#(#iter),*)]});
