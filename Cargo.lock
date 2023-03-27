@@ -37,7 +37,7 @@ dependencies = [
 
 [[package]]
 name = "struct-tools-derive"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "itertools",
  "proc-macro2",

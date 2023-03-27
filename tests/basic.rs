@@ -131,7 +131,9 @@ fn enum_test() {
 #[test]
 fn field_enum_test() {
     let test = BookFieldEnum::Id(1);
-    println!("{test:?}")
+    let fields_vec = Book::default().get_fields_enums();
+    println!("{test:?}");
+    println!("{fields_vec:?}");
 }
 #[test]
 fn enum_values_test() {

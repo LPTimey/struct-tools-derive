@@ -11,6 +11,7 @@ Table of Contents
       - [fields and values](#fields-and-values)
     - [StructEnum](#structenum)
     - [StructFieldEnum](#structfieldenum)
+      - [get\_fields\_enums](#get_fields_enums)
     - [StructBuilder](#structbuilder)
 
 ## Contains
@@ -25,6 +26,7 @@ currently contains:
   - `fields_and_values`<`E`> (`&self`) -> Vec<`(String, E)`>: A Method that returns a Vector of Tuples of the field and the values of its Instance
 - StructEnum
 - StructFieldEnum
+  - get_fields_enums
 - StructBuilder
 
 ## How to use
@@ -267,6 +269,10 @@ pub struct Foo{
     field2: String,
 }
 ```
+
+#### get_fields_enums
+
+TODO!
 
 ---
 

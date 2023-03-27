@@ -762,15 +762,16 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
         }) => named,
         _ => todo!(),
     };
+    let fields_vec = fields.iter().filter_map(|field| field.ident.as_ref()).collect_vec();
 
-    let fields_vec: std::vec::Vec<std::string::String> = fields
+    let fields_str: std::vec::Vec<std::string::String> = fields
         .iter()
         .filter_map(|field| field.ident.as_ref().map(|id| format!("{id}")))
         .collect::<Vec<String>>();
 
     let field_types = fields.iter().map(|field| &field.ty).collect::<Vec<&Type>>();
 
-    let variants: Vec<String> = fields_vec
+    let variants: Vec<String> = fields_str
         .iter()
         .cloned()
         .map(|field| {
@@ -810,15 +811,26 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
             }
         })
         .collect_vec();
-    let variants = variants.into_iter().map(|variant| {
-        let variant = Ident::new(&variant, Span::call_site().into());
-        quote! {#variant}
-    });
+    let variants = variants
+        .into_iter()
+        .map(|variant| {
+            let variant = Ident::new(&variant, Span::call_site().into());
+            quote! {#variant}
+        })
+        .collect_vec();
+    let get_fields_enums = quote! {
+        impl #ident {
+            pub fn get_fields_enums(&self) -> Vec< #new_ident > {
+                vec![#(#new_ident :: #variants (self. #fields_vec .clone())),*]
+            }
+        }
+    };
     let result = quote! {
         #derives
         pub enum #new_ident{
             #(#variants (#field_types)),*
         }
+        #get_fields_enums
     };
     //println!("{result}");
     result.into()
