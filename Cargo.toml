@@ -1,6 +1,6 @@
 [package]
 name = "struct-tools-derive"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Tim Ruland"]
 edition = "2021"
 readme = "README.md"
@@ -13,6 +13,7 @@ license = "MIT"
 proc-macro = true
 
 [dependencies]
-syn = {version = "1.0.109", features = ["extra-traits", "full"]}
+syn = {version = "2.0.10", features = ["extra-traits", "full"]}
+proc-macro2 = "1.0.54"
 quote = "1.0.26"
 itertools = "0.10.5"

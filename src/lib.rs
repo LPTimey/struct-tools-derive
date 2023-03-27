@@ -3,7 +3,7 @@ use proc_macro::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
     self, parse_macro_input, Attribute, Data::Struct, DataStruct, DeriveInput, Fields::Named,
-    FieldsNamed, Ident, Type,
+    FieldsNamed, Ident, Type
 };
 
 #[doc = r#"
@@ -130,7 +130,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 
     let attrs: Vec<String> = attrs
         .iter()
-        .filter_map(|attr| attr.path.get_ident())
+        .filter_map(|attr| attr.path().get_ident())
         .map(|attr| attr.to_string())
         .collect();
 
@@ -218,7 +218,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
 
     let attr_strings: Vec<String> = attrs
         .iter()
-        .filter_map(|attr| attr.path.get_ident())
+        .filter_map(|attr| attr.path().get_ident())
         .map(|attr| attr.to_string())
         .collect();
     //println!("{:#?}; {:#?}",attr_strings, attrs);
@@ -230,7 +230,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
         true => {
             let iter = attrs
                 .iter()
-                .filter(|attr| *attr.path.get_ident().unwrap() == "BuilderDerive")
+                .filter(|attr| attr.path().is_ident("BuilderDerive"))
                 .collect_vec();
             Some(quote!(#[derive #(#iter),*]))
         }
@@ -254,8 +254,8 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
                 .attrs
                 .iter()
                 .cloned()
-                .filter(|attr| *attr.path.get_ident().unwrap() == "default")
-                .map(|attr| attr.tokens)
+                .filter(|attr| attr.path().is_ident("default"))
+                .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())
                 .collect_vec();
             (field.ident.unwrap(), defaults)
         })
@@ -402,17 +402,17 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
 
     let attr: Vec<Attribute> = attrs
         .into_iter()
-        .filter(|attr| *attr.path.get_ident().unwrap() == "EnumDerive")
+        .filter(|attr| attr.path().is_ident("EnumDerive"))
         .collect();
     //println!("{attr:?}\n");
 
     let ident = Ident::new(&(ident.to_string() + "Enum"), ident.span());
 
     let derives = match attr.is_empty() {
-        false => Some(attr.into_iter().map(|attr| attr.tokens)),
+        false => Some(attr.into_iter().flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())),
         true => None,
     };
-    let derives = derives.map(|iter| quote! {#[derive #(#iter),*]});
+    let derives = derives.map(|iter| quote! {#[derive (#(#iter),*)]});
 
     let fields = match data {
         Struct(DataStruct {
@@ -462,7 +462,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
 
         #(impl From<#from_types> for #ident{
             fn from(value: #field_types) -> Self {
-                #ident :: #from_fields (value.into())
+                #ident :: #from_fields (value)
             }
         })*
     };
@@ -530,13 +530,13 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
 
     let attr: Vec<Attribute> = attrs
         .into_iter()
-        .filter(|attr| *attr.path.get_ident().unwrap() == "EnumDerive")
+        .filter(|attr| *attr.path().get_ident().unwrap() == "EnumDerive")
         .collect();
     let derives = match attr.is_empty() {
-        false => Some(attr.into_iter().map(|attr| attr.tokens)),
+        false => Some(attr.into_iter().flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())),
         true => None,
     };
-    let derives = derives.map(|iter| quote! {#[derive #(#iter),*]});
+    let derives = derives.map(|iter| quote! {#[derive (#(#iter),*)]});
 
     let fields = match data {
         Struct(DataStruct {
