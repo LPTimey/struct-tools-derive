@@ -145,10 +145,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
         _ => todo!(),
     };
 
-    let field_ids = fields.iter().filter_map(|field| match &field.ident {
-        Some(id) => Some(id),
-        None => None,
-    });
+    let field_ids = fields.iter().filter_map(|field| field.ident.clone());
 
     let field_types = fields.iter().map(|field| &field.ty).unique();
     let types = quote!(#(From<#field_types>)+*);
