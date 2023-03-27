@@ -167,6 +167,25 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     let fields_quote = match derive_fields {
         true => Some(quote! {
             impl #ident {
+                /**
+
+                returns the names of the Structs fields
+
+                ```rust
+                use struct_tools_derive::StructIterTools;
+
+                #[derive(StructIterTools)]
+                #[StructFields]
+                pub struct Foo{
+                    field1: i32,
+                    field2: String,
+                    //{...}
+                }
+
+                let fields = Foo::fields();
+                assert_eq!(fields,vec![String::from("field1"), String::from("field2")/*,{...}*/])
+                ```
+                 */
                 pub fn fields() -> ::std::vec::Vec<::std::string::String>{
                     vec![#(#fields_vec.to_string()),*]
                 }
@@ -177,6 +196,46 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     let values_quote = match derive_values {
         true => Some(quote! {
             impl #ident{
+                /**
+
+                returns the values of this Instance
+
+                ```rust
+                use struct_tools_derive::StructIterTools;
+
+                // Default just for demonstration
+                #[derive(StructIterTools, Default)]
+                #[StructValues]
+                pub struct Foo{
+                    field1: i32,
+                    field2: String,
+                    //{...}
+                }
+
+                enum FooEnum {
+                I32(i32),
+                String(String),
+                //{...}
+                }
+                impl From<i32> for FooEnum {
+                    fn from(value: i32) -> Self {
+                        FooEnum::I32(value)
+                    }
+                }
+                impl From<String> for FooEnum {
+                    fn from(value: String) -> Self {
+                        FooEnum::String(value)
+                    }
+                }
+                //{...}
+
+                let instance = Foo::default();
+
+                let values = instance.values::<FooEnum>();
+
+                assert_eq!(values,vec![FooEnum::I32(0), FooEnum::String(String::new())/*,{...}*/])
+                ```
+                 */
                 pub fn values<E>(&self) -> ::std::vec::Vec<E>
                 where
                 E: #types
@@ -190,6 +249,47 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
     let fields_and_values_quote = match derive_fields && derive_values {
         true => Some(quote! {
             impl #ident{
+                /**
+
+                returns a Vector of Tuples of the field and the values of this Instance
+
+                ```rust
+                use struct_tools_derive::StructIterTools;
+
+                // Default just for demonstration
+                #[derive(StructIterTools, Default)]
+                #[StructFields]
+                #[StructValues]
+                pub struct Foo{
+                    field1: i32,
+                    field2: String,
+                    //{...}
+                }
+
+                enum FooEnum {
+                    I32(i32),
+                    String(String),
+                    //{...}
+                }
+                impl From<i32> for FooEnum {
+                    fn from(value: i32) -> Self {
+                        FooEnum::I32(value)
+                    }
+                }
+                impl From<String> for FooEnum {
+                    fn from(value: String) -> Self {
+                        FooEnum::String(value)
+                    }
+                }
+                //{...}
+
+                let instance = Foo::default();
+
+                let f_v = instance.fields_and_values::<FooEnum>();
+
+                assert_eq!(f_v,vec![(String::from("field1"), FooEnum::I32(0)), (String::from("field2"), FooEnum::String(String::new()))/*{,...}*/])
+                ```
+                 */
                 pub fn fields_and_values<E>(&self) -> ::std::vec::Vec<(::std::string::String, E)>
                 where
                 E: #types
@@ -210,6 +310,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
 
         #fields_and_values_quote
     };
+    //println!("{}",result);
     result.into()
 }
 
@@ -634,22 +735,20 @@ pub struct Foo{
 }
 ```
 */
-#[proc_macro_derive(StructFieldEnum, attributes(EnumDerive))]
+#[proc_macro_derive(StructFieldEnum, attributes(EnumDerive, StructFields, StructValues))]
 pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let DeriveInput {
         attrs, ident, data, ..
     } = ast;
 
-    let ident = Ident::new(&(ident.to_string() + "FieldEnum"), ident.span());
+    let new_ident = Ident::new(&(ident.to_string() + "FieldEnum"), ident.span());
 
-    let attr: Vec<Attribute> = attrs
-        .into_iter()
-        .filter(|attr| attr.path().is_ident("EnumDerive"))
-        .collect();
-    let derives = match attr.is_empty() {
+    let derives = match attrs.is_empty() {
         false => Some(
-            attr.into_iter()
+            attrs
+                .into_iter()
+                .filter(|attr| attr.path().is_ident("EnumDerive"))
                 .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>()),
         ),
         true => None,
@@ -717,7 +816,7 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     });
     let result = quote! {
         #derives
-        pub enum #ident{
+        pub enum #new_ident{
             #(#variants (#field_types)),*
         }
     };

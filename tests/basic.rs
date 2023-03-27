@@ -116,6 +116,13 @@ fn values() {
 }
 
 #[test]
+fn fields_and_values_test() {
+    let instance = Book::default();
+
+    let f_v = instance.fields_and_values::<BookEnum>();
+}
+
+#[test]
 fn enum_test() {
     let test = BookEnum::String("()".to_string());
     println!("{test:?}");
