@@ -354,7 +354,7 @@ This Grants you access to an automatically generated struct with the name `{stru
 # }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum FooBuilderError {
     field1,
     field2,
