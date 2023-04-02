@@ -212,6 +212,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
                     //{...}
                 }
 
+                #[derive(Debug)] // Debug only needed for example
                 enum FooEnum {
                 I32(i32),
                 String(String),
@@ -266,6 +267,7 @@ pub fn derive_struct_iter_tools(input: TokenStream) -> TokenStream {
                     //{...}
                 }
 
+                #[derive(Debug)] // Debug only needed for example
                 enum FooEnum {
                     I32(i32),
                     String(String),
