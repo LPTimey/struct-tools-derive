@@ -354,9 +354,9 @@ use struct_tools_derive::{StructFieldEnum, StructBuilder};
 #[derive(StructFieldEnum, StructBuilder)]
 #[StructFields]
 pub struct Foo{
-    #[default(1)]
+    #[builder_default(1)]
     field1: i32,
-    #[default("Hello".to_owned())]
+    #[builder_default("Hello".to_owned())]
     field2: String,
     //{...}
 }

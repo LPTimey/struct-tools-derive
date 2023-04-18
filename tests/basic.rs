@@ -2,31 +2,21 @@
 use std::fmt::Display;
 use struct_tools_derive::{StructBuilder, StructEnum, StructFieldEnum, StructIterTools};
 
-#[derive(Debug, PartialEq, StructIterTools, StructEnum, StructFieldEnum, StructBuilder)]
+#[derive(
+    Debug, Default, PartialEq, StructIterTools, StructEnum, StructFieldEnum, StructBuilder,
+)]
 #[StructFields]
 #[StructValues]
 #[EnumDerive(Debug, Clone)]
 pub struct Book {
     id: u64,
     title: String,
-    #[default(0)]
+    #[builder_default(0)]
     pages: u64,
     author: String,
-    #[default(None)]
+    #[builder_default(None)]
     inspirations: Option<Vec<String>>,
     date_time_: u64,
-}
-impl Default for Book {
-    fn default() -> Self {
-        Self {
-            id: Default::default(),
-            title: Default::default(),
-            pages: Default::default(),
-            author: Default::default(),
-            inspirations: Default::default(),
-            date_time_: Default::default(),
-        }
-    }
 }
 
 #[derive(Debug)]

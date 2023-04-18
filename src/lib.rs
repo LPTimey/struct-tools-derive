@@ -404,9 +404,9 @@ use struct_tools_derive::{StructFieldEnum, StructBuilder};
 #[derive(StructFieldEnum, StructBuilder)]
 #[StructFields]
 pub struct Foo{
-    #[default(1)]
+    #[builder_default(1)]
     field1: i32,
-    #[default("Hello".to_owned())]
+    #[builder_default("Hello".to_owned())]
     field2: String,
     //{...}
 }
@@ -414,7 +414,10 @@ pub struct Foo{
 
 TODO!
 */
-#[proc_macro_derive(StructBuilder, attributes(StructFields, BuilderDerive, default))]
+#[proc_macro_derive(
+    StructBuilder,
+    attributes(StructFields, BuilderDerive, builder_default)
+)]
 pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
     let DeriveInput {
         attrs, ident, data, ..
@@ -461,7 +464,7 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
                 .attrs
                 .iter()
                 .cloned()
-                .filter(|attr| attr.path().is_ident("default"))
+                .filter(|attr| attr.path().is_ident("builder_default"))
                 .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())
                 .collect_vec();
             (field.ident.unwrap(), defaults)
@@ -764,7 +767,10 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
         }) => named,
         _ => todo!(),
     };
-    let fields_vec = fields.iter().filter_map(|field| field.ident.as_ref()).collect_vec();
+    let fields_vec = fields
+        .iter()
+        .filter_map(|field| field.ident.as_ref())
+        .collect_vec();
 
     let fields_str: std::vec::Vec<std::string::String> = fields
         .iter()
