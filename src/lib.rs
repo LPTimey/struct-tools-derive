@@ -779,7 +779,7 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
 
     let field_types = fields.iter().map(|field| &field.ty).collect::<Vec<&Type>>();
 
-    let variants: Vec<String> = fields_str
+    let variants_str: Vec<String> = fields_str
         .iter()
         .cloned()
         .map(|field| {
@@ -819,10 +819,10 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
             }
         })
         .collect_vec();
-    let variants = variants
-        .into_iter()
+    let variants = variants_str
+        .iter()
         .map(|variant| {
-            let variant = Ident::new(&variant, Span::call_site().into());
+            let variant = Ident::new(variant, Span::call_site().into());
             quote! {#variant}
         })
         .collect_vec();
@@ -839,6 +839,11 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
             #(#variants (#field_types)),*
         }
         #get_fields_enums
+        impl #new_ident{
+            pub fn get_variants() -> Vec<&'static str> {
+                vec![#( #variants_str ),*]
+            }
+        }
     };
     //println!("{result}");
     result.into()

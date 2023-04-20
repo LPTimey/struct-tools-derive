@@ -45,11 +45,6 @@ impl From<Option<Vec<String>>> for BookEnumTest {
         BookEnumTest::OptionVecString(value)
     }
 }
-impl Display for BookEnumTest {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
 
 #[test]
 fn fields() {

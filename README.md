@@ -12,6 +12,7 @@ Table of Contents
     - [StructEnum](#structenum)
     - [StructFieldEnum](#structfieldenum)
       - [get\_fields\_enums](#get_fields_enums)
+      - [get\_variants](#get_variants)
     - [StructBuilder](#structbuilder)
 
 ## Contains
@@ -271,6 +272,10 @@ pub struct Foo{
 ```
 
 #### get_fields_enums
+
+TODO!
+
+#### get_variants
 
 TODO!
 
