@@ -693,15 +693,6 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
                 else{return Err(());}
             }
         })*
-
-        impl #ident {
-            pub fn try_get_value<T>(&self) -> Option<T>
-            where
-                T: Into<Self>,
-            {
-                None
-            }
-        }
     };
     //println!("{result}");
     result.into()
