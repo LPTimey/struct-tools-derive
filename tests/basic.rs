@@ -1,14 +1,24 @@
 #![allow(unused)]
 use itertools::Itertools;
 use std::fmt::Display;
-use struct_tools_derive::{StructBuilder, StructEnum, StructFieldEnum, StructIterTools};
+use struct_tools_derive::{
+    StructBuilder, StructEnum, StructEnumMut, StructFieldEnum, StructIterTools,
+};
 
 #[derive(
-    Debug, Default, PartialEq, StructIterTools, StructEnum, StructFieldEnum, StructBuilder,
+    Debug,
+    Default,
+    PartialEq,
+    StructIterTools,
+    StructEnum,
+    StructEnumMut,
+    StructFieldEnum,
+    StructBuilder,
 )]
 #[StructFields]
 #[StructValues]
 #[EnumDerive(Debug, Clone)]
+#[MutEnumDerive(Debug)]
 pub struct Book {
     id: u64,
     title: String,

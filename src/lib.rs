@@ -699,6 +699,117 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
 }
 
 /**
+you can also have it derive traits by adding them to the `MutEnumDerives` attribute like this:
+
+```rust
+# use struct_tools_derive::{StructEnumMut};
+#[derive(StructEnumMut)]
+#[MutEnumDerive(Debug)]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    //{...}
+}
+```
+
+TODO!
+
+*/
+#[proc_macro_derive(StructEnumMut, attributes(MutEnumDerive))]
+pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(input as DeriveInput);
+    let DeriveInput {
+        attrs, ident, data, ..
+    } = ast;
+
+    //println!("{attrs:?}\n");
+
+    let attr: Vec<Attribute> = attrs
+        .into_iter()
+        .filter(|attr| attr.path().is_ident("MutEnumDerive"))
+        .collect();
+    //println!("{attr:?}\n");
+
+    let ident = Ident::new(&(ident.to_string() + "EnumMut"), ident.span());
+
+    let derives = match attr.is_empty() {
+        false => Some(
+            attr.into_iter()
+                .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>()),
+        ),
+        true => None,
+    };
+    let derives = derives.map(|iter| quote! {#[derive (#(#iter),*)]});
+
+    let fields = match data {
+        Struct(DataStruct {
+            fields: Named(FieldsNamed { ref named, .. }),
+            ..
+        }) => named,
+        _ => todo!(),
+    };
+
+    let field_types = fields
+        .iter()
+        .map(|field| &field.ty)
+        .unique()
+        .collect::<Vec<&Type>>();
+    let enum_fields = field_types
+        .iter()
+        .cloned()
+        .map(|typ| {
+            let string = typ
+                .to_token_stream()
+                .to_string()
+                .char_indices()
+                .map(|(i, chr)| {
+                    if i == 0 {
+                        chr.to_uppercase().to_string()
+                    //} else if vec!['<','>','(',')','[',']'].contains(&chr){
+                    //    String::new()
+                    } else if !chr.is_ascii_alphabetic() && !chr.is_ascii_alphanumeric() {
+                        String::new()
+                    } else {
+                        chr.to_string()
+                    }
+                })
+                .collect::<String>();
+            let string = string.replace(' ', "");
+            Ident::new(&string, Span::call_site().into())
+        })
+        .collect::<Vec<Ident>>();
+    let from_fields = enum_fields.clone();
+
+    let result = quote! {
+        #derives
+        pub enum #ident<'a> {
+            #(#enum_fields (&'a mut #field_types)),*
+        }
+
+        #(impl<'a> From<&'a mut #field_types> for #ident<'a>{
+            fn from(value: &'a mut #field_types) -> Self {
+                #ident :: #from_fields (value)
+            }
+        })*
+
+        #(impl<'a> TryInto<&'a mut #field_types> for #ident<'a>{
+            type Error=();
+
+            fn try_into(self) -> Result<&'a mut #field_types, Self::Error> {
+                if let Self::#enum_fields (val) = self{
+                    return Ok(val);
+                } else {
+                return Err(());
+            }
+            }
+        })*
+
+    };
+    //println!("{result}");
+    result.into()
+}
+
+/**
 Will create an Enum which is capable of containing all possible contents of the struct
 
 # Example
