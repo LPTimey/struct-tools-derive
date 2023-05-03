@@ -804,8 +804,19 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
             }
         })*
 
+        #(impl<'a> TryInto<&'a mut #field_types> for &'a mut #ident<'a>{
+            type Error=();
+
+            fn try_into(self) -> Result<&'a mut #field_types, Self::Error> {
+                match self {
+                    #ident ::#enum_fields(val) => Ok(*val),
+                    _ => Err(()),
+                }
+            }
+        })*
+
     };
-    //println!("{result}");
+    println!("{result}");
     result.into()
 }
 
