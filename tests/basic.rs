@@ -1,4 +1,5 @@
 #![allow(unused)]
+use itertools::Itertools;
 use std::fmt::Display;
 use struct_tools_derive::{StructBuilder, StructEnum, StructFieldEnum, StructIterTools};
 
@@ -111,6 +112,25 @@ fn fields_and_values_test() {
 fn enum_test() {
     let test = BookEnum::String("()".to_string());
     println!("{test:?}");
+}
+
+#[test]
+fn enum_try_into_test() {
+    let book = Book::default();
+    let test = book
+        .values::<BookEnum>()
+        .into_iter()
+        .map(TryInto::<String>::try_into)
+        .collect_vec();
+    let assert = vec![
+        Err(()),
+        Ok("".to_owned()),
+        Err(()),
+        Ok("".to_owned()),
+        Err(()),
+        Err(()),
+    ];
+    assert_eq!(assert, test)
 }
 
 #[test]

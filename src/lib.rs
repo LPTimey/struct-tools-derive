@@ -682,6 +682,26 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
                 #ident :: #from_fields (value)
             }
         })*
+
+        #(impl TryInto<#from_types> for #ident{
+            type Error=();
+
+            fn try_into(self) -> Result<#from_types, Self::Error> {
+                if let Self::#enum_fields (val) = self{
+                    return Ok(val);
+                }
+                else{return Err(());}
+            }
+        })*
+
+        impl #ident {
+            pub fn try_get_value<T>(&self) -> Option<T>
+            where
+                T: Into<Self>,
+            {
+                None
+            }
+        }
     };
     //println!("{result}");
     result.into()
