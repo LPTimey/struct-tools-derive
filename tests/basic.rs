@@ -57,6 +57,10 @@ impl From<Option<Vec<String>>> for BookEnumTest {
     }
 }
 
+pub struct BookWithLifetime<'a>{
+    test = &'a mut String
+}
+
 #[test]
 fn fields() {
     let fields = Book::fields();
