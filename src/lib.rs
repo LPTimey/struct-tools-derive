@@ -619,6 +619,8 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
         .filter(|attr| attr.path().is_ident("EnumDerive"))
         .collect();
     //println!("{attr:?}\n");
+    
+    let old_ident = ident.clone();
 
     let ident = Ident::new(&(ident.to_string() + "Enum"), ident.span());
 
@@ -676,6 +678,14 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
         pub enum #ident {
             #(#enum_fields (#field_types)),*
         }
+        
+        impl #old_ident{
+            pub fn gets_enums(&self) -> Vec<#ident> {
+                let mut result = Vec::new();
+                #(result.push(#ident::from(self.#fields));)*
+                result
+            }
+        }
 
         #(impl From<#from_types> for #ident{
             fn from(value: #field_types) -> Self {
@@ -729,6 +739,8 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
         .filter(|attr| attr.path().is_ident("MutEnumDerive"))
         .collect();
     //println!("{attr:?}\n");
+    
+    let old_ident = ident.clone();
 
     let ident = Ident::new(&(ident.to_string() + "EnumMut"), ident.span());
 
@@ -784,6 +796,14 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
         #derives
         pub enum #ident<'a> {
             #(#enum_fields (&'a mut #field_types)),*
+        }
+        
+        impl #old_ident{
+            pub fn gets_enums_mut(&mut self) -> Vec<#ident> {
+                let mut result = Vec::new();
+                #(result.push(#ident::from(&mut self.#fields));)*
+                result
+            }
         }
 
         #(impl<'a> From<&'a mut #field_types> for #ident<'a>{
