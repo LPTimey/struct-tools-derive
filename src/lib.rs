@@ -619,7 +619,7 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
         .filter(|attr| attr.path().is_ident("EnumDerive"))
         .collect();
     //println!("{attr:?}\n");
-    
+
     let old_ident = ident.clone();
 
     let ident = Ident::new(&(ident.to_string() + "Enum"), ident.span());
@@ -646,6 +646,8 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
         .map(|field| &field.ty)
         .unique()
         .collect::<Vec<&Type>>();
+
+    let struct_fields = fields.iter().flat_map(|field| &field.ident).collect_vec();
     let enum_fields = field_types
         .iter()
         .cloned()
@@ -678,11 +680,11 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
         pub enum #ident {
             #(#enum_fields (#field_types)),*
         }
-        
+
         impl #old_ident{
             pub fn gets_enums(&self) -> Vec<#ident> {
                 let mut result = Vec::new();
-                #(result.push(#ident::from(self.#fields));)*
+                #(result.push(#ident::from(self.#struct_fields.clone()));)*
                 result
             }
         }
@@ -739,7 +741,7 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
         .filter(|attr| attr.path().is_ident("MutEnumDerive"))
         .collect();
     //println!("{attr:?}\n");
-    
+
     let old_ident = ident.clone();
 
     let ident = Ident::new(&(ident.to_string() + "EnumMut"), ident.span());
@@ -766,6 +768,7 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
         .map(|field| &field.ty)
         .unique()
         .collect::<Vec<&Type>>();
+    let struct_fields = fields.iter().flat_map(|field| &field.ident).collect_vec();
     let enum_fields = field_types
         .iter()
         .cloned()
@@ -797,11 +800,11 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
         pub enum #ident<'a> {
             #(#enum_fields (&'a mut #field_types)),*
         }
-        
+
         impl #old_ident{
             pub fn gets_enums_mut(&mut self) -> Vec<#ident> {
                 let mut result = Vec::new();
-                #(result.push(#ident::from(&mut self.#fields));)*
+                #(result.push(#ident::from(&mut self.#struct_fields));)*
                 result
             }
         }

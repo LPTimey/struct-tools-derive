@@ -57,8 +57,8 @@ impl From<Option<Vec<String>>> for BookEnumTest {
     }
 }
 
-pub struct BookWithLifetime<'a>{
-    test = &'a mut String
+pub struct BookWithLifetime<'a> {
+    test: &'a mut String,
 }
 
 #[test]
