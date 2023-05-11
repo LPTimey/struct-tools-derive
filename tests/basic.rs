@@ -4,6 +4,8 @@ use std::fmt::Display;
 use struct_tools_derive::{
     StructBuilder, StructEnum, StructEnumMut, StructFieldEnum, StructIterTools,
 };
+
+// FIXME!: This currently raises an error with the StructEnums for conflicting impl of From<u64> if put in books if field
 pub type Id = u64;
 
 #[derive(
@@ -21,7 +23,7 @@ pub type Id = u64;
 #[EnumDerive(Debug, Clone)]
 #[MutEnumDerive(Debug)]
 pub struct Book {
-    id: Id,
+    id: u64,
     title: String,
     #[builder_default(0)]
     pages: u64,
@@ -39,7 +41,6 @@ pub enum BookEnumTest {
     OptionVecString(Option<Vec<String>>),
     Tuple((u8, u8)),
 }
-
 impl From<(u8, u8)> for BookEnumTest {
     fn from(v: (u8, u8)) -> Self {
         Self::Tuple(v)
