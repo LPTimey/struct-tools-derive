@@ -669,6 +669,8 @@ pub fn derive_struct_enum(input: TokenStream) -> TokenStream {
                 })
                 .collect::<String>();
             let string = string.replace(' ', "");
+            let string = string.replace('(', "");
+            let string = string.replace(')', "");
             Ident::new(&string, Span::call_site().into())
         })
         .collect::<Vec<Ident>>();
@@ -790,6 +792,8 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
                 })
                 .collect::<String>();
             let string = string.replace(' ', "");
+            let string = string.replace('(', "");
+            let string = string.replace(')', "");
             Ident::new(&string, Span::call_site().into())
         })
         .collect::<Vec<Ident>>();

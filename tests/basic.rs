@@ -28,6 +28,7 @@ pub struct Book {
     #[builder_default(None)]
     inspirations: Option<Vec<String>>,
     date_time_: u64,
+    tuple: (u8, u8),
 }
 
 #[derive(Debug)]
@@ -35,6 +36,13 @@ pub enum BookEnumTest {
     U64(u64),
     String(String),
     OptionVecString(Option<Vec<String>>),
+    Tuple((u8, u8)),
+}
+
+impl From<(u8, u8)> for BookEnumTest {
+    fn from(v: (u8, u8)) -> Self {
+        Self::Tuple(v)
+    }
 }
 impl BookEnumTest {
     pub fn gen_id(value: u64) -> Self {
@@ -72,7 +80,8 @@ fn fields() {
             "pages",
             "author",
             "inspirations",
-            "date_time_"
+            "date_time_",
+            "tuple"
         ],
         fields
     )
@@ -87,6 +96,7 @@ fn values() {
         author: "me".to_string(),
         inspirations: None,
         date_time_: 0,
+        tuple: (0, 0),
     };
     let expected = vec![
         BookEnumTest::U64(1),
@@ -95,6 +105,7 @@ fn values() {
         BookEnumTest::String("me".to_string()),
         BookEnumTest::OptionVecString(None),
         BookEnumTest::U64(0),
+        BookEnumTest::Tuple((0, 0)),
     ];
 
     let book_values: Vec<BookEnumTest> = book.values::<BookEnumTest>();
@@ -143,6 +154,7 @@ fn enum_try_into_test() {
         Ok("".to_owned()),
         Err(()),
         Err(()),
+        Err(()),
     ];
     assert_eq!(assert, test)
 }
@@ -163,6 +175,7 @@ fn enum_values_test() {
         author: "me".to_string(),
         inspirations: None,
         date_time_: 0,
+        tuple: (0, 0),
     };
     let expected = vec![
         BookEnum::U64(1),
@@ -171,6 +184,7 @@ fn enum_values_test() {
         BookEnum::String("me".to_string()),
         BookEnum::OptionVecString(None),
         BookEnum::U64(0),
+        BookEnum::u8u8((0, 0)),
     ];
     let book_values: Vec<BookEnum> = book.values::<BookEnum>();
     //println!("fields: {book_values:?}");
@@ -199,6 +213,7 @@ fn builder_test() {
         author: "me".to_string(),
         inspirations: None,
         date_time_: 0,
+        tuple: (0, 0),
     };
     let mut builder = BookBuilder::default()
         .set_author("me".to_string())
@@ -207,6 +222,7 @@ fn builder_test() {
         .set_inspirations(None)
         .set_pages(100)
         .set_title("Title".to_string())
+        .set_tuple((0, 0))
         .build()
         .unwrap();
     assert_eq!(book, builder)
