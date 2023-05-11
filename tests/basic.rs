@@ -4,6 +4,7 @@ use std::fmt::Display;
 use struct_tools_derive::{
     StructBuilder, StructEnum, StructEnumMut, StructFieldEnum, StructIterTools,
 };
+pub type Id = u64;
 
 #[derive(
     Debug,
@@ -20,7 +21,7 @@ use struct_tools_derive::{
 #[EnumDerive(Debug, Clone)]
 #[MutEnumDerive(Debug)]
 pub struct Book {
-    id: u64,
+    id: Id,
     title: String,
     #[builder_default(0)]
     pages: u64,

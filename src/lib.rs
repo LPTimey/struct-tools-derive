@@ -843,7 +843,7 @@ pub fn derive_struct_enum_mut(input: TokenStream) -> TokenStream {
         })*
 
     };
-    //println!("{result}");
+    println!("{result}");
     result.into()
 }
 
