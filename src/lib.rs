@@ -1008,3 +1008,112 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     //println!("{result}");
     result.into()
 }
+
+#[proc_macro_derive(StructFieldEnumMut, attributes(EnumDerive, StructFields, StructValues))]
+pub fn derive_struct_field_enum_mut(input: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(input as DeriveInput);
+    let DeriveInput {
+        attrs, ident, data, ..
+    } = ast;
+
+    let new_ident = Ident::new(&(ident.to_string() + "FieldEnumMut"), ident.span());
+
+    let derives = match attrs.is_empty() {
+        false => Some(
+            attrs
+                .into_iter()
+                .filter(|attr| attr.path().is_ident("EnumDerive"))
+                .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>()),
+        ),
+        true => None,
+    };
+    let derives = derives.map(|iter| quote! {#[derive (#(#iter),*)]});
+
+    let fields = match data {
+        Struct(DataStruct {
+            fields: Named(FieldsNamed { ref named, .. }),
+            ..
+        }) => named,
+        _ => todo!(),
+    };
+    let fields_vec = fields
+        .iter()
+        .filter_map(|field| field.ident.as_ref())
+        .collect_vec();
+
+    let fields_str: std::vec::Vec<std::string::String> = fields
+        .iter()
+        .filter_map(|field| field.ident.as_ref().map(|id| format!("{id}")))
+        .collect::<Vec<String>>();
+
+    let field_types = fields.iter().map(|field| &field.ty).collect::<Vec<&Type>>();
+
+    let variants_str: Vec<String> = fields_str
+        .iter()
+        .cloned()
+        .map(|field| {
+            field
+                .chars()
+                .enumerate()
+                .map(|(i, chr)| match i {
+                    0 => chr.to_uppercase().to_string(),
+                    _ => chr.to_string(),
+                })
+                .collect::<String>()
+        })
+        .map(|mut field| {
+            let i = field.find('_');
+            let mut field = match i {
+                Some(i) => {
+                    field.remove(i);
+                    let mut field = field.chars().map(|chr| chr.to_string()).collect_vec();
+                    if field.get(i).is_some() {
+                        field[i] = field[i].to_uppercase();
+                    }
+                    field.join("")
+                }
+                None => field,
+            };
+            let i = field.find('_');
+            match i {
+                Some(i) => {
+                    field.remove(i);
+                    let mut field = field.chars().map(|chr| chr.to_string()).collect_vec();
+                    if field.get(i).is_some() {
+                        field[i] = field[i].to_uppercase();
+                    }
+                    field.join("")
+                }
+                None => field,
+            }
+        })
+        .collect_vec();
+    let variants = variants_str
+        .iter()
+        .map(|variant| {
+            let variant = Ident::new(variant, Span::call_site().into());
+            quote! {#variant}
+        })
+        .collect_vec();
+    let get_fields_enums_mut = quote! {
+        impl #ident {
+            pub fn get_fields_enums_mut(&mut self) -> Vec< #new_ident > {
+                vec![#(#new_ident :: #variants (&mut self. #fields_vec)),*]
+            }
+        }
+    };
+    let result = quote! {
+        #derives
+        pub enum #new_ident<'a>{
+            #(#variants (&'a mut #field_types)),*
+        }
+        #get_fields_enums_mut
+        impl #new_ident<_>{
+            pub fn get_variants() -> Vec<&'static str> {
+                vec![#( #variants_str ),*]
+            }
+        }
+    };
+    //println!("{result}");
+    result.into()
+}
