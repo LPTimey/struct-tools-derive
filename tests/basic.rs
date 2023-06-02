@@ -2,13 +2,14 @@
 use itertools::Itertools;
 use std::fmt::Display;
 use struct_tools_derive::{
-    StructBuilder, StructEnum, StructEnumMut, StructFieldEnum, StructIterTools,
+    StructBuilder, StructEnum, StructEnumMut, StructFieldEnum, StructFieldEnumMut, StructIterTools,
 };
 
 // FIXME!: This currently raises an error with the StructEnums for conflicting impl of From<u64> if put in books if field
 pub type Id = u64;
 
 #[derive(
+    Clone,
     Debug,
     Default,
     PartialEq,
@@ -16,6 +17,7 @@ pub type Id = u64;
     StructEnum,
     StructEnumMut,
     StructFieldEnum,
+    StructFieldEnumMut,
     StructBuilder,
 )]
 #[StructFields]
@@ -228,4 +230,23 @@ fn builder_test() {
         .build()
         .unwrap();
     assert_eq!(book, builder)
+}
+
+#[test]
+fn field_enum_mut_test() {
+    let mut book = Book::default();
+    let old_book = book.clone();
+    println!("before: {:?}", book);
+    let enums = book.get_fields_enums_mut();
+    enums.into_iter().for_each(|enm| match enm {
+        BookFieldEnumMut::Id(id) => *id = *id + 1,
+        BookFieldEnumMut::Title(title) => *title = "after".to_owned(),
+        BookFieldEnumMut::Pages(pages) => *pages = *pages * 1,
+        BookFieldEnumMut::Author(auth) => *auth = "after".to_owned(),
+        BookFieldEnumMut::Inspirations(insp) => *insp = Some(vec!["me".to_string()]),
+        BookFieldEnumMut::DateTime(dt) => *dt = *dt + 1,
+        BookFieldEnumMut::Tuple(t) => *t = (t.0 + 1, t.1 + 1),
+    });
+    println!("after: {:?}", book);
+    assert_ne!(old_book, book)
 }

@@ -1009,7 +1009,7 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[proc_macro_derive(StructFieldEnumMut, attributes(EnumDerive, StructFields, StructValues))]
+#[proc_macro_derive(StructFieldEnumMut, attributes(MutEnumDerive, StructFields, StructValues))]
 pub fn derive_struct_field_enum_mut(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let DeriveInput {
@@ -1022,7 +1022,7 @@ pub fn derive_struct_field_enum_mut(input: TokenStream) -> TokenStream {
         false => Some(
             attrs
                 .into_iter()
-                .filter(|attr| attr.path().is_ident("EnumDerive"))
+                .filter(|attr| attr.path().is_ident("MutEnumDerive"))
                 .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>()),
         ),
         true => None,
@@ -1108,7 +1108,7 @@ pub fn derive_struct_field_enum_mut(input: TokenStream) -> TokenStream {
             #(#variants (&'a mut #field_types)),*
         }
         #get_fields_enums_mut
-        impl #new_ident<_>{
+        impl<'a> #new_ident<'a>{
             pub fn get_variants() -> Vec<&'static str> {
                 vec![#( #variants_str ),*]
             }
