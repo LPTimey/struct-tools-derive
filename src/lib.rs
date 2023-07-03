@@ -1,7 +1,7 @@
 #![allow(clippy::redundant_clone)]
 use itertools::Itertools;
 use proc_macro::{Span, TokenStream};
-use quote::{quote, ToTokens};
+use quote::{format_ident, quote, ToTokens};
 use syn::{
     self, parse_macro_input, Attribute, Data::Struct, DataStruct, DeriveInput, Fields::Named,
     FieldsNamed, Ident, Type,
@@ -416,7 +416,7 @@ pub struct Foo{
 TODO!
 */
 #[proc_macro_derive(
-    StructBuilder,
+    StructBuilderOld,
     attributes(StructFields, BuilderDerive, builder_default)
 )]
 pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
@@ -544,6 +544,235 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
                     self. #field_names = Some( #field_names );
                     self
                 })*
+            }
+        },
+        false => panic!("Attribute: \"StructFields\" is not set"),
+    };
+    //println!("{result}");
+    result.into()
+}
+
+///TODO
+#[proc_macro_derive(
+    StructBuilder,
+    attributes(StructFields, BuilderDerive, builder_default)
+)]
+pub fn derive_struct_builder_type_state(input: TokenStream) -> TokenStream {
+    let DeriveInput {
+        attrs, ident, data, ..
+    } = parse_macro_input!(input as DeriveInput);
+
+    let attr_strings: Vec<String> = attrs
+        .iter()
+        .filter_map(|attr| attr.path().get_ident())
+        .map(|attr| attr.to_string())
+        .collect_vec();
+    // dbg!(&attr_strings);
+
+    let new_ident = Ident::new((ident.to_string() + "Builder").as_str(), ident.span());
+
+    let get_fields = attr_strings.contains(&"StructFields".to_owned());
+    let get_derives = attr_strings.contains(&"BuilderDerive".to_owned());
+
+    let derives = match get_derives {
+        true => {
+            let iter = attrs
+                .iter()
+                .filter(|attr| attr.path().is_ident("BuilderDerive"))
+                .collect_vec();
+            Some(quote!(#[derive #(#iter),*]))
+        }
+        false => None,
+    };
+
+    let fields = match data {
+        Struct(DataStruct {
+            fields: Named(FieldsNamed { ref named, .. }),
+            ..
+        }) => named,
+        _ => panic!("Builder only available on non Tuple or Unit Structs"),
+    };
+    //dbg!(&fields);
+
+    let field_types = fields.iter().cloned().map(|field| field.ty).collect_vec();
+    let field_traits = fields
+        .iter()
+        .cloned()
+        .map(|field| {
+            let strings = field.ident.unwrap().to_string();
+            Ident::new(&strings.to_uppercase(), proc_macro2::Span::call_site())
+        })
+        .collect_vec();
+    let (field_structs_quote, (some_field_structs, _no_field_structs)): (Vec<_>, (Vec<_>, Vec<_>)) =
+        field_traits
+            .iter()
+            .cloned()
+            .zip(field_types.iter())
+            .map(|(ident, ty)| {
+                let some_ident = format_ident!("Some{}", ident);
+                let no_ident = format_ident!("No{}", ident);
+                (
+                    quote! {
+                            #[allow(non_camel_case_types)]
+                            pub struct #some_ident(#ty);
+                            impl From<#ty> for #some_ident{
+                                fn from(value: #ty) -> Self {
+                                    #some_ident(value)
+                                }
+                            }
+                            impl #ident for #some_ident{}
+                            impl Some for #some_ident{
+                                type Output = #ty;
+
+                                fn get(self) -> Self::Output {
+                                    self.0
+                                }
+                            }
+
+                            #[allow(non_camel_case_types)]
+                            pub struct #no_ident;
+                            impl #ident for #no_ident{}
+                    },
+                    (some_ident, no_ident),
+                )
+            })
+            .unzip();
+    let generics = ('A'..='Z')
+        .map(|chr| Ident::new(&chr.to_string(), proc_macro2::Span::call_site()))
+        .enumerate()
+        .filter_map(|(i, ident)| match i < field_traits.len() {
+            true => Some(ident),
+            false => None,
+        })
+        .collect_vec();
+    let field_names = fields
+        .iter()
+        .cloned()
+        .flat_map(|field| field.ident)
+        .collect_vec();
+    let (field_defaults, default_generics): (Vec<_>, Vec<_>) = fields
+        .iter()
+        .cloned()
+        .zip(field_traits.iter())
+        .map(|(field, ident)| {
+            let defaults = field
+                .attrs
+                .iter()
+                .cloned()
+                .filter(|attr| attr.path().is_ident("builder_default"))
+                .flat_map(|attr| attr.parse_args::<proc_macro2::TokenStream>())
+                .collect_vec();
+            (field.ident.unwrap(), /*field.ty*/ ident, defaults)
+        })
+        .map(|(field, ty, attrs)| match attrs.is_empty() {
+            true => {
+                let typ = Ident::new(&("No".to_owned() + &ty.to_string()), field.span());
+                (quote!(#field: #typ), quote!(#typ))
+            }
+            false => {
+                let default = attrs[0].clone();
+                let typ = Ident::new(&("Some".to_owned() + &ty.to_string()), field.span());
+                (quote!(#field: #typ (#default)), quote!(#typ))
+            }
+        })
+        .unzip();
+    //dbg!(&field_defaults);
+
+    let set = field_names
+        .iter()
+        .cloned()
+        .map(|ident| {
+            Ident::new(
+                &("custom_set_".to_owned() + &ident.to_string()),
+                ident.span(),
+            )
+        })
+        .collect_vec();
+
+    let pre_set = field_names
+        .iter()
+        .cloned()
+        .map(|ident| Ident::new(&("set_".to_owned() + &ident.to_string()), ident.span()))
+        .collect_vec();
+
+    let set_vars = quote! {#(let #field_names = self. #field_names);*};
+    let return_set = quote! {#new_ident {
+        #(#field_names),*
+    }};
+    let set_generics = (0..fields.len())
+        .map(|i| {
+            let mut new_generics = generics.clone();
+            if let Some(change) = new_generics.get_mut(i) {
+                *change = Ident::new("T", change.span());
+            };
+
+            quote!(#(#new_generics),*)
+        })
+        .collect_vec();
+    let pre_set_generics = some_field_structs
+        .iter()
+        .cloned()
+        .enumerate()
+        .map(|(i, ident)| {
+            let mut new_generics = generics.clone();
+            if let Some(change) = new_generics.get_mut(i) {
+                *change = ident;
+            };
+
+            quote!(#(#new_generics),*)
+        })
+        .collect_vec();
+
+    let result = match get_fields {
+        true => quote! {
+
+            pub trait Some {
+                type Output;
+                fn get(self) -> Self::Output;
+            }
+
+            #(
+                #[allow(non_camel_case_types)]
+                pub trait #field_traits{}
+            )*
+
+            #(#field_structs_quote)*
+
+            #derives
+            pub struct #new_ident<#(#generics: #field_traits),*>{
+                #(#field_names : #generics),*
+            }
+            impl Default for #new_ident<#(#default_generics),*>{
+                fn default() -> Self {
+                    Self {
+                        #( #field_defaults ),*
+                    }
+                }
+            }
+            impl <#(#generics: #field_traits),*> #new_ident<#(#generics),*> {
+                #(
+                    pub fn #set<T> (self, value: T) -> #new_ident<#set_generics>
+                    where T : #field_traits + Some{
+                        #set_vars ;
+                        let #field_names = value;
+                        #return_set
+                    }
+                )*
+                #(
+                    pub fn #pre_set(self, value: impl Into< #some_field_structs >) -> #new_ident<#pre_set_generics> {
+                        #set_vars ;
+                        let #field_names = value.into();
+                        #return_set
+                    }
+                )*
+            }
+            impl<#(#generics : #field_traits + Some<Output= #field_types>),*> #new_ident<#(#generics),*> {
+                pub fn build(self) ->  #ident {
+
+                    #ident{
+                        #(#field_names: self. #field_names .get()),*
+                    }
+                }
             }
         },
         false => panic!("Attribute: \"StructFields\" is not set"),

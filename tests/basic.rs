@@ -208,6 +208,7 @@ fn enum_values_test() {
     assert!(success)
 }
 
+/*
 #[test]
 fn builder_test() {
     let book = Book {
@@ -219,7 +220,7 @@ fn builder_test() {
         date_time_: 0,
         tuple: (0, 0),
     };
-    let mut builder = BookBuilder::default()
+    let builder = BookBuilder::default()
         .set_author("me".to_string())
         .set_date_time_(0)
         .set_id(1)
@@ -229,6 +230,29 @@ fn builder_test() {
         .set_tuple((0, 0))
         .build()
         .unwrap();
+    assert_eq!(book, builder)
+}*/
+
+#[test]
+fn type_state_builder_test() {
+    let book = Book {
+        id: 1,
+        title: "Title".to_string(),
+        pages: 100,
+        author: "me".to_string(),
+        inspirations: None,
+        date_time_: 0,
+        tuple: (0, 0),
+    };
+    let builder = BookBuilder::default()
+        .set_author("me".to_string())
+        .set_date_time_(0)
+        .set_id(1)
+        .set_inspirations(None)
+        .set_pages(100)
+        .set_title("Title".to_string())
+        .set_tuple((0, 0))
+        .build();
     assert_eq!(book, builder)
 }
 
