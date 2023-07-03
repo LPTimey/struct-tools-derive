@@ -1,3 +1,4 @@
+#![allow(clippy::redundant_clone)]
 use itertools::Itertools;
 use proc_macro::{Span, TokenStream};
 use quote::{quote, ToTokens};
@@ -1009,7 +1010,10 @@ pub fn derive_struct_field_enum(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-#[proc_macro_derive(StructFieldEnumMut, attributes(MutEnumDerive, StructFields, StructValues))]
+#[proc_macro_derive(
+    StructFieldEnumMut,
+    attributes(MutEnumDerive, StructFields, StructValues)
+)]
 pub fn derive_struct_field_enum_mut(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let DeriveInput {

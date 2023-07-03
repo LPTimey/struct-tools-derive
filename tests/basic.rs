@@ -239,12 +239,12 @@ fn field_enum_mut_test() {
     println!("before: {:?}", book);
     let enums = book.get_fields_enums_mut();
     enums.into_iter().for_each(|enm| match enm {
-        BookFieldEnumMut::Id(id) => *id = *id + 1,
+        BookFieldEnumMut::Id(id) => *id += 1,
         BookFieldEnumMut::Title(title) => *title = "after".to_owned(),
-        BookFieldEnumMut::Pages(pages) => *pages = *pages * 1,
+        BookFieldEnumMut::Pages(pages) => *pages += 1,
         BookFieldEnumMut::Author(auth) => *auth = "after".to_owned(),
         BookFieldEnumMut::Inspirations(insp) => *insp = Some(vec!["me".to_string()]),
-        BookFieldEnumMut::DateTime(dt) => *dt = *dt + 1,
+        BookFieldEnumMut::DateTime(dt) => *dt += 1,
         BookFieldEnumMut::Tuple(t) => *t = (t.0 + 1, t.1 + 1),
     });
     println!("after: {:?}", book);
