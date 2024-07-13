@@ -552,7 +552,166 @@ pub fn derive_struct_builder(input: TokenStream) -> TokenStream {
     result.into()
 }
 
-///TODO
+/**
+Will create a TypeStateBuilderPattern Struct.
+
+If you have a struct
+
+```rust
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    //{...}
+}
+```
+
+you can just add the derive to it
+
+```rust
+use struct_tools_derive::StructBuilder;
+
+#[derive(StructBuilder)]
+#[StructFields]
+pub struct Foo{
+    field1: i32,
+    field2: String,
+    //{...}
+}
+```
+
+This Grants you access to an automatically generated struct with the name `{structname}Builder`.
+
+```rust
+
+# pub struct Foo{
+#     field1: i32,
+#     field2: String,
+#     //{...}
+# }
+
+pub struct FooBuilder<A: FIELD1, B: FIELD2/*,... */> {
+    field1: A,
+    field2: B,
+}
+impl Default for FooBuilder<NoFIELD1, NoFIELD2/*,... */> {
+    fn default() -> Self {
+        Self {
+            // except if defaults are given
+            field1: NoFIELD1,
+            field2: NoFIELD2,
+            //{...}
+        }
+    }
+}
+impl<A, B/*,... */> FooBuilder<A, B,/*,... */> 
+where
+    A: FIELD1,
+    B: FIELD2,
+    //{...}
+{
+    pub fn set_field1(self, value: impl Into<SomeFIELD1>) -> FooBuilder<SomeFIELD1, B> {
+        //{...}
+        # let field1 = self.field1;
+        # let field2 = self.field2;
+        # let field1 = value.into();
+        # FooBuilder { field1, field2 }
+    }
+    pub fn set_field2(self, value: impl Into<SomeFIELD2>) -> FooBuilder<A, SomeFIELD2> {
+        // {...}
+        # let field1 = self.field1;
+        # let field2 = self.field2;
+        # let field2 = value.into();
+        # FooBuilder { field1, field2 }
+    }
+    //{...}
+}
+impl<A, B> FooBuilder<A, B>
+where
+    A: FIELD1 + Some<Output = i32>,
+    B: FIELD2 + Some<Output = String>,
+    //{...}
+{
+    pub fn build(self) -> Foo {
+        //{...}
+        # Foo {
+            # field1: self.field1.get(),
+            # field2: self.field2.get(),
+        # }
+    }
+}
+
+pub trait Some {
+    type Output;
+    fn get(self) -> Self::Output;
+}
+# #[allow(non_camel_case_types)]
+pub trait FIELD1 {}
+
+# #[allow(non_camel_case_types)]
+pub struct SomeFIELD1(i32);
+impl From<i32> for SomeFIELD1 {
+    fn from(value: i32) -> Self {
+        SomeFIELD1(value)
+    }
+}
+impl FIELD1 for SomeFIELD1 {}
+impl Some for SomeFIELD1 {
+    type Output = i32;
+    fn get(self) -> Self::Output {
+        self.0
+    }
+}
+
+# #[allow(non_camel_case_types)]
+pub struct NoFIELD1;
+impl FIELD1 for NoFIELD1 {}
+
+//------
+
+# #[allow(non_camel_case_types)]
+pub trait FIELD2 {}
+
+# #[allow(non_camel_case_types)]
+pub struct SomeFIELD2(String);
+impl From<String> for SomeFIELD2 {
+    fn from(value: String) -> Self {
+        SomeFIELD2(value)
+    }
+}
+impl FIELD2 for SomeFIELD2 {}
+impl Some for SomeFIELD2 {
+    type Output = String;
+    fn get(self) -> Self::Output {
+        self.0
+    }
+}
+
+# #[allow(non_camel_case_types)]
+pub struct NoFIELD2;
+impl FIELD2 for NoFIELD2 {}
+
+//{...}
+
+```
+
+If you want specific fields to have specific Default-values you can add the default-Attribute to it like this:
+
+```rust
+use struct_tools_derive::{StructBuilder};
+
+#[derive(StructBuilder)]
+#[StructFields]
+pub struct Foo{
+    #[builder_default(1)]
+    field1: i32,
+    #[builder_default("Hello".to_owned())]
+    field2: String,
+    //{...}
+}
+```
+
+TODO!
+*/
 #[proc_macro_derive(
     StructBuilder,
     attributes(StructFields, BuilderDerive, builder_default)
@@ -777,7 +936,7 @@ pub fn derive_struct_builder_type_state(input: TokenStream) -> TokenStream {
         },
         false => panic!("Attribute: \"StructFields\" is not set"),
     };
-    //println!("{result}");
+    println!("{result}");
     result.into()
 }
 
